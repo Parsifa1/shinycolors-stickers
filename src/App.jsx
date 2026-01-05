@@ -18,23 +18,8 @@ import characters from "./characters.json";
 import Picker from "./components/Picker";
 import Info from "./components/Info";
 
-// UI 库组件
-import Slider from "@mui/material/Slider";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
-import Switch from "@mui/material/Switch";
-import Snackbar from "@mui/material/Snackbar";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-import InputLabel from "@mui/material/InputLabel";
-import FormControl from "@mui/material/FormControl";
-import CircularProgress from "@mui/material/CircularProgress";
-import Box from "@mui/material/Box";
+// UI 库组件 (移除 MUI，替换为原生 HTML 元素加 DaisyUI 类名)
 import ColorPicker from "@uiw/react-color-chrome";
-
-// 新增：引入 ToggleButton 用于语言切换
-import ToggleButton from "@mui/material/ToggleButton";
-import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 
 // 工具类与本地化
 import getConfiguration from "./utils/config";
@@ -498,519 +483,333 @@ function App() {
         t={t}
       />
 
-      {/* 语言切换栏 (替代原来的计数器) */}
-      <div
-        className="counter"
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          gap: "10px",
-        }}>
-        <span style={{ fontSize: "0.9rem", color: "#666" }}>
+      {/* 语言切换栏 */}
+      <div className="absolute top-4 right-4 flex items-center gap-2 bg-base-100 p-2 rounded-lg shadow-sm z-10 opacity-90 hover:opacity-100 transition-opacity">
+        <span className="text-sm text-gray-600 font-yuruka">
           {t("language")}:
         </span>
-        <ToggleButtonGroup
-          value={lang}
-          exclusive
-          onChange={handleLangChange}
-          size="small"
-          color="secondary"
-          sx={{ height: "30px" }}>
-          <ToggleButton
-            value="zh"
-            sx={{ fontSize: "0.8rem", padding: "5px 10px" }}>
-            中
-          </ToggleButton>
-          <ToggleButton
-            value="ja"
-            sx={{ fontSize: "0.8rem", padding: "5px 10px" }}>
-            日
-          </ToggleButton>
-          <ToggleButton
-            value="en"
-            sx={{ fontSize: "0.8rem", padding: "5px 10px" }}>
-            En
-          </ToggleButton>
-        </ToggleButtonGroup>
+        <div className="join">
+          <input
+            className="join-item btn btn-sm btn-outline btn-secondary font-yuruka"
+            type="radio"
+            name="options"
+            aria-label="中"
+            checked={lang === "zh"}
+            onChange={() => handleLangChange(null, "zh")}
+          />
+          <input
+            className="join-item btn btn-sm btn-outline btn-secondary font-yuruka"
+            type="radio"
+            name="options"
+            aria-label="日"
+            checked={lang === "ja"}
+            onChange={() => handleLangChange(null, "ja")}
+          />
+          <input
+            className="join-item btn btn-sm btn-outline btn-secondary font-yuruka"
+            type="radio"
+            name="options"
+            aria-label="En"
+            checked={lang === "en"}
+            onChange={() => handleLangChange(null, "en")}
+          />
+        </div>
       </div>
 
-      <div className="container">
-        <div
-          className="vertical"
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "center",
-            gap: "16px",
-          }}>
-          <div style={{ width: "50px", flexShrink: 0 }}></div>
-
-          <div
-            className="canvas-wrapper"
-            style={{
-              position: "relative",
-              cursor: isDragging.current ? "grabbing" : "grab",
-            }}
-            onMouseDown={handlePointerDown}
-            onMouseMove={handlePointerMove}
-            onMouseUp={handlePointerUp}
-            onMouseLeave={handlePointerUp}
-            onTouchStart={handlePointerDown}
-            onTouchMove={handlePointerMove}
-            onTouchEnd={handlePointerUp}>
-            <div className="canvas">
-              <Canvas draw={draw} spaceSize={settings.lineSpacing} />
-            </div>
-
-            {!isReady && (
-              <Box
-                sx={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  width: "100%",
-                  height: "100%",
-                  bgcolor: "rgba(255, 255, 255, 0.8)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  zIndex: 10,
-                  flexDirection: "column",
-                  gap: 1,
-                }}>
-                <CircularProgress color="secondary" />
-                <span style={{ fontSize: "0.8rem", color: "#666" }}>
-                  {t("loading_assets")}
-                </span>
-              </Box>
-            )}
-          </div>
-
-          <div
-            className="vertical-controls"
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              height: "256px",
-              alignItems: "center",
-              width: "80px",
-              flexShrink: 0,
-            }}>
-            <Slider
-              value={
-                settings.curve && !settings.vertical ?
-                  256 - settings.y + settings.s * 3
-                : 256 - settings.y
-              }
-              onChange={(_, v) =>
-                handlePositionChange(
-                  "y",
-                  settings.curve && !settings.vertical ?
-                    256 + settings.s * 3 - v
-                  : 256 - v,
-                )
-              }
-              min={-50}
-              max={256}
-              step={1}
-              orientation="vertical"
-              track={false}
-              color="secondary"
-              style={{ height: "100%" }}
-            />
+      <div className="container font-yuruka">
+        <div className="flex flex-col md:flex-row justify-center gap-4 w-full">
+          <div className="flex flex-row justify-center items-center gap-4 bg-base-200 p-6 rounded-box shadow-md">
+            <div className="w-12 flex-shrink-0"></div>
 
             <div
+              className="relative shadow-xl rounded-box overflow-hidden bg-white border border-base-300"
               style={{
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-around",
-                height: "80%",
-                flex: 1,
-              }}>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                }}>
-                <span
-                  style={{
-                    fontSize: "0.8rem",
-                    fontWeight: "bold",
-                    color: "#555",
-                    marginBottom: "4px",
-                    whiteSpace: "nowrap",
-                    transform: "scale(0.9)",
-                  }}>
-                  {t("vertical")}
-                </span>
-                <Switch
-                  checked={settings.vertical}
-                  onChange={(e) => updateSetting("vertical", e.target.checked)}
-                  color="secondary"
-                  style={{ margin: "0px" }}
-                />
+                cursor: isDragging.current ? "grabbing" : "grab",
+              }}
+              onMouseDown={handlePointerDown}
+              onMouseMove={handlePointerMove}
+              onMouseUp={handlePointerUp}
+              onMouseLeave={handlePointerUp}
+              onTouchStart={handlePointerDown}
+              onTouchMove={handlePointerMove}
+              onTouchEnd={handlePointerUp}>
+              <div className="canvas">
+                <Canvas draw={draw} spaceSize={settings.lineSpacing} />
               </div>
 
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                }}>
-                <span
-                  style={{
-                    fontSize: "0.8rem",
-                    fontWeight: "bold",
-                    color: "#555",
-                    marginBottom: "4px",
-                    whiteSpace: "nowrap",
-                    transform: "scale(0.9)",
-                  }}>
-                  {t("text_on_top")}
-                </span>
-                <Switch
-                  checked={settings.textOnTop}
-                  onChange={(e) => updateSetting("textOnTop", e.target.checked)}
-                  color="secondary"
-                  style={{ margin: "0px" }}
-                />
+              {!isReady && (
+                <div className="absolute top-0 left-0 w-full h-full bg-white/80 flex flex-col items-center justify-center z-10 gap-2">
+                  <span className="loading loading-spinner text-secondary"></span>
+                  <span className="text-sm text-gray-600">
+                    {t("loading_assets")}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="bg-base-100 rounded-box p-2 shadow-sm border border-base-200 h-[256px] flex flex-row items-center w-20 flex-shrink-0">
+              <input
+                type="range"
+                min={-50}
+                max={256}
+                value={
+                  settings.curve && !settings.vertical ?
+                    256 - settings.y + settings.s * 3
+                  : 256 - settings.y
+                }
+                onChange={(e) =>
+                  handlePositionChange(
+                    "y",
+                    settings.curve && !settings.vertical ?
+                      256 + settings.s * 3 - Number(e.target.value)
+                    : 256 - Number(e.target.value),
+                  )
+                }
+                className="range range-secondary range-xs h-full w-4 appearance-slider-vertical"
+                style={{ writingMode: "bt-lr", WebkitAppearance: "slider-vertical" }}
+              />
+
+              <div className="flex flex-col justify-around h-4/5 flex-1 items-center">
+                <div className="flex flex-col items-center">
+                  <span className="text-xs font-bold text-gray-600 mb-1 whitespace-nowrap scale-90">
+                    {t("vertical")}
+                  </span>
+                  <input
+                    type="checkbox"
+                    className="toggle toggle-secondary toggle-sm"
+                    checked={settings.vertical}
+                    onChange={(e) => updateSetting("vertical", e.target.checked)}
+                  />
+                </div>
+
+                <div className="flex flex-col items-center">
+                  <span className="text-xs font-bold text-gray-600 mb-1 whitespace-nowrap scale-90">
+                    {t("text_on_top")}
+                  </span>
+                  <input
+                    type="checkbox"
+                    className="toggle toggle-secondary toggle-sm"
+                    checked={settings.textOnTop}
+                    onChange={(e) => updateSetting("textOnTop", e.target.checked)}
+                  />
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="horizontal">
-          <Slider
-            className="slider-horizontal"
-            value={settings.x}
-            onChange={(_, v) => handlePositionChange("x", v)}
+        <div className="w-full max-w-[600px] flex flex-col gap-6">
+          <input
+            type="range"
             min={0}
             max={296}
-            step={1}
-            track={false}
-            color="secondary"
+            value={settings.x}
+            onChange={(e) => handlePositionChange("x", Number(e.target.value))}
+            className="range range-secondary range-sm w-full"
           />
 
-          <div className="text_react">
-            <div className="text">
-              <TextField
-                label={t("text")}
-                size="small"
-                color="secondary"
+          <div className="flex flex-col sm:flex-row gap-4 w-full">
+            <div className="flex-grow">
+              <textarea
+                className="textarea textarea-secondary w-full"
+                placeholder={t("text")}
                 value={settings.text}
-                multiline
-                fullWidth
                 onChange={(e) => updateSetting("text", e.target.value)}
-              />
+                rows={2}
+              ></textarea>
             </div>
 
-            <FormControl fullWidth>
-              <InputLabel id="font-select-label" color="secondary">
-                {t("font")}
-              </InputLabel>
-              <Select
-                labelId="font-select-label"
+            <div className="form-control w-full sm:w-auto min-w-[10rem]">
+              <label className="label">
+                <span className="label-text">{t("font")}</span>
+              </label>
+              <select
+                className="select select-secondary w-full"
                 value={settings.font}
-                label={t("font")}
-                size="small"
-                color="secondary"
                 onChange={(e) => updateSetting("font", e.target.value)}>
                 {fontList.map((f) => (
-                  <MenuItem key={f.name} value={f.name}>
+                  <option key={f.name} value={f.name}>
                     {f.name}
-                  </MenuItem>
+                  </option>
                 ))}
-              </Select>
-            </FormControl>
+              </select>
+            </div>
           </div>
 
-          <div
-            className="settings"
-            style={{
-              fontFamily:
-                "YurukaStd, SSFangTangTi, YouWangFangYuanTi, sans-serif",
-            }}>
-            <div
-              className="strokesize"
-              style={{
-                display: "flex",
-                gap: "20px",
-                width: "100%",
-                fontFamily:
-                  "YurukaStd, SSFangTangTi, YouWangFangYuanTi, sans-serif",
-              }}>
-              <div style={{ flex: 1 }}>
-                <label>
-                  <nobr>{t("inner_stroke")}: </nobr>
+          <div className="flex flex-col gap-6 w-full font-yuruka">
+            <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
+              <div className="flex-1 w-full">
+                <label className="label">
+                  <span className="label-text font-bold">{t("inner_stroke")}: {settings.colorStrokeSize}</span>
                 </label>
-                <Slider
-                  value={settings.colorStrokeSize}
-                  onChange={(_, v) => updateSetting("colorStrokeSize", v)}
+                <input
+                  type="range"
                   min={0}
                   max={25}
-                  step={1}
-                  track={false}
-                  color="secondary"
-                  style={{ width: "100%" }}
+                  value={settings.colorStrokeSize}
+                  onChange={(e) => updateSetting("colorStrokeSize", Number(e.target.value))}
+                  className="range range-secondary range-xs"
                 />
               </div>
-              <div style={{ flex: 1 }}>
-                <label>
-                  <nobr>{t("outer_stroke")}: </nobr>
+              <div className="flex-1 w-full">
+                <label className="label">
+                  <span className="label-text font-bold">{t("outer_stroke")}: {settings.whiteStrokeSize}</span>
                 </label>
-                <Slider
-                  value={settings.whiteStrokeSize}
-                  onChange={(_, v) => updateSetting("whiteStrokeSize", v)}
+                <input
+                  type="range"
                   min={0}
                   max={35}
-                  step={1}
-                  track={false}
-                  color="secondary"
-                  style={{ width: "100%" }}
+                  value={settings.whiteStrokeSize}
+                  onChange={(e) => updateSetting("whiteStrokeSize", Number(e.target.value))}
+                  className="range range-secondary range-xs"
                 />
               </div>
             </div>
 
-            <div
-              className="normal"
-              style={{
-                display: "flex",
-                gap: "20px",
-                width: "100%",
-                fontFamily:
-                  "YurukaStd, SSFangTangTi, YouWangFangYuanTi, sans-serif",
-              }}>
-              <div style={{ flex: 1 }}>
-                <label>{t("rotate")}:</label>
-                <Slider
-                  value={settings.r}
-                  onChange={(_, v) => updateSetting("r", v)}
+            <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
+              <div className="flex-1 w-full">
+                <label className="label">
+                  <span className="label-text font-bold">{t("rotate")}: {settings.r}</span>
+                </label>
+                <input
+                  type="range"
                   min={-16}
                   max={16}
                   step={0.1}
-                  track={false}
-                  color="secondary"
-                  style={{ width: "100%" }}
+                  value={settings.r}
+                  onChange={(e) => updateSetting("r", Number(e.target.value))}
+                  className="range range-secondary range-xs"
                 />
               </div>
-              <div style={{ flex: 1 }}>
-                <label>
-                  <nobr>{t("font_size")}:</nobr>
+              <div className="flex-1 w-full">
+                <label className="label">
+                  <span className="label-text font-bold">{t("font_size")}: {settings.s}</span>
                 </label>
-                <Slider
-                  value={settings.s}
-                  onChange={(_, v) => updateSetting("s", v)}
+                <input
+                  type="range"
                   min={5}
                   max={100}
-                  step={1}
-                  track={false}
-                  color="secondary"
-                  style={{ width: "100%" }}
+                  value={settings.s}
+                  onChange={(e) => updateSetting("s", Number(e.target.value))}
+                  className="range range-secondary range-xs"
                 />
               </div>
             </div>
 
-            <div
-              className="linesetting"
-              style={{
-                display: "flex",
-                gap: "20px",
-                width: "100%",
-                fontFamily:
-                  "YurukaStd, SSFangTangTi, YouWangFangYuanTi, sans-serif",
-              }}>
-              <div style={{ flex: 1 }}>
-                <label>
-                  <nobr>{t("line_spacing")}: </nobr>
+            <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
+              <div className="flex-1 w-full">
+                <label className="label">
+                  <span className="label-text font-bold">{t("line_spacing")}: {settings.lineSpacing}</span>
                 </label>
-                <Slider
-                  value={settings.lineSpacing}
-                  onChange={(_, v) => updateSetting("lineSpacing", v)}
+                <input
+                  type="range"
                   min={0}
                   max={100}
-                  step={1}
-                  track={false}
-                  color="secondary"
-                  style={{ width: "100%" }}
+                  value={settings.lineSpacing}
+                  onChange={(e) => updateSetting("lineSpacing", Number(e.target.value))}
+                  className="range range-secondary range-xs"
                 />
               </div>
-              <div style={{ flex: 1 }}>
-                <label>
-                  <nobr>{t("letter_spacing")}: </nobr>
+              <div className="flex-1 w-full">
+                <label className="label">
+                  <span className="label-text font-bold">{t("letter_spacing")}: {settings.ls}</span>
                 </label>
-                <Slider
-                  value={settings.ls}
-                  onChange={(_, v) => updateSetting("ls", v)}
+                <input
+                  type="range"
                   min={-20}
                   max={50}
-                  step={1}
-                  track={false}
-                  color="secondary"
-                  style={{ width: "100%" }}
+                  value={settings.ls}
+                  onChange={(e) => updateSetting("ls", Number(e.target.value))}
+                  className="range range-secondary range-xs"
                 />
               </div>
             </div>
 
-            <div
-              className="effects-row"
-              style={{
-                display: "flex",
-                gap: "10px",
-                margin: "10px 0",
-                width: "100%",
-                fontFamily:
-                  "YurukaStd, SSFangTangTi, YouWangFangYuanTi, sans-serif",
-              }}>
-              <div
-                style={{
-                  flex: 1,
-                  border: "1px solid #eee",
-                  borderRadius: "8px",
-                  padding: "8px",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "5px",
-                }}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}>
-                  <label style={{ fontWeight: "bold", fontSize: "0.9rem" }}>
-                    {t("curve")}
-                  </label>
-                  <Switch
+            <div className="flex flex-col sm:flex-row gap-4 w-full my-2">
+              <div className="flex-1 border border-base-200 rounded-lg p-3 flex flex-col gap-2 bg-white">
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-sm">{t("curve")}</span>
+                  <input
+                    type="checkbox"
+                    className="toggle toggle-secondary toggle-sm"
                     checked={settings.curve}
                     onChange={(e) => updateSetting("curve", e.target.checked)}
-                    color="secondary"
-                    size="small"
                   />
                 </div>
                 {settings.curve && (
                   <div>
-                    <label style={{ fontSize: "0.75rem" }}>
-                      {t("curve_factor")}:
+                    <label className="label py-1">
+                      <span className="label-text-alt">{t("curve_factor")}: {settings.curveFactor}</span>
                     </label>
-                    <Slider
-                      value={settings.curveFactor}
-                      onChange={(_, v) => updateSetting("curveFactor", v)}
+                    <input
+                      type="range"
                       min={3}
                       max={10}
                       step={0.1}
-                      track={false}
-                      color="secondary"
-                      size="small"
-                      style={{ width: "100%" }}
+                      value={settings.curveFactor}
+                      onChange={(e) => updateSetting("curveFactor", Number(e.target.value))}
+                      className="range range-secondary range-xs"
                     />
                   </div>
                 )}
               </div>
 
-              <div
-                style={{
-                  flex: 1,
-                  border: "1px solid #eee",
-                  borderRadius: "8px",
-                  padding: "8px",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "5px",
-                }}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}>
-                  <label style={{ fontWeight: "bold", fontSize: "0.9rem" }}>
-                    {t("wobbly")}
-                  </label>
-                  <div style={{ display: "flex", alignItems: "center" }}>
+              <div className="flex-1 border border-base-200 rounded-lg p-3 flex flex-col gap-2 bg-white">
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-sm">{t("wobbly")}</span>
+                  <div className="flex items-center gap-2">
                     {settings.wobbly && (
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          marginRight: "5px",
-                        }}>
-                        <TextField
-                          label={t("seed")}
-                          variant="standard"
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="text"
+                          className="input input-bordered input-xs w-12 text-center"
                           value={seed}
                           onChange={handleSeedChange}
-                          color="secondary"
-                          inputProps={{
-                            style: {
-                              padding: 0,
-                              fontSize: "0.8rem",
-                              width: "40px",
-                              textAlign: "center",
-                            },
-                          }}
-                          InputLabelProps={{
-                            shrink: true,
-                            style: { fontSize: "0.7rem" },
-                          }}
                         />
-                        <Button
-                          size="small"
+                        <button
+                          className="btn btn-ghost btn-xs px-1"
                           onClick={generateNewSeed}
-                          color="secondary"
-                          style={{
-                            minWidth: "20px",
-                            padding: 0,
-                            marginLeft: "2px",
-                          }}
                           title={t("new_seed")}>
                           🎲
-                        </Button>
+                        </button>
                       </div>
                     )}
-                    <Switch
+                    <input
+                      type="checkbox"
+                      className="toggle toggle-secondary toggle-sm"
                       checked={settings.wobbly}
-                      onChange={(e) =>
-                        updateSetting("wobbly", e.target.checked)
-                      }
-                      color="secondary"
-                      size="small"
+                      onChange={(e) => updateSetting("wobbly", e.target.checked)}
                     />
                   </div>
                 </div>
                 {settings.wobbly && (
-                  <div style={{ display: "flex", gap: "5px" }}>
-                    <div style={{ flex: 1 }}>
-                      <label style={{ fontSize: "0.75rem" }}>
-                        {t("scale_chaos")}:
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <label className="label py-1">
+                        <span className="label-text-alt">{t("scale_chaos")}</span>
                       </label>
-                      <Slider
-                        value={settings.wobblyScale}
-                        onChange={(_, v) => updateSetting("wobblyScale", v)}
+                      <input
+                        type="range"
                         min={0}
                         max={1}
                         step={0.01}
-                        track={false}
-                        color="secondary"
-                        size="small"
-                        style={{ width: "100%" }}
+                        value={settings.wobblyScale}
+                        onChange={(e) => updateSetting("wobblyScale", Number(e.target.value))}
+                        className="range range-secondary range-xs"
                       />
                     </div>
-                    <div style={{ flex: 1 }}>
-                      <label style={{ fontSize: "0.75rem" }}>
-                        {t("rotate_chaos")}:
+                    <div className="flex-1">
+                      <label className="label py-1">
+                        <span className="label-text-alt">{t("rotate_chaos")}</span>
                       </label>
-                      <Slider
-                        value={settings.wobblyRotation}
-                        onChange={(_, v) => updateSetting("wobblyRotation", v)}
+                      <input
+                        type="range"
                         min={0}
                         max={1}
                         step={0.01}
-                        track={false}
-                        color="secondary"
-                        size="small"
-                        style={{ width: "100%" }}
+                        value={settings.wobblyRotation}
+                        onChange={(e) => updateSetting("wobblyRotation", Number(e.target.value))}
+                        className="range range-secondary range-xs"
                       />
                     </div>
                   </div>
@@ -1018,28 +817,23 @@ function App() {
               </div>
             </div>
 
-            <div
-              className="color-pickers-container"
-              style={{
-                fontFamily:
-                  "YurukaStd, SSFangTangTi, YouWangFangYuanTi, sans-serif",
-              }}>
-              <div className="color-picker-item">
-                <label>{t("fill_color")}:</label>
+            <div className="flex flex-wrap justify-center gap-8 p-4 bg-base-200 rounded-box shadow-sm">
+              <div className="flex flex-col items-center gap-2">
+                <label className="text-sm font-bold">{t("fill_color")}:</label>
                 <ColorPicker
                   color={settings.fillColor}
                   onChange={(color) => updateSetting("fillColor", color.hexa)}
                 />
               </div>
-              <div className="color-picker-item2">
-                <label>{t("inner_stroke_color")}:</label>
+              <div className="flex flex-col items-center gap-2">
+                <label className="text-sm font-bold">{t("inner_stroke_color")}:</label>
                 <ColorPicker
                   color={settings.strokeColor}
                   onChange={(color) => updateSetting("strokeColor", color.hexa)}
                 />
               </div>
-              <div className="color-picker-item3">
-                <label>{t("outer_stroke_color")}:</label>
+              <div className="flex flex-col items-center gap-2">
+                <label className="text-sm font-bold">{t("outer_stroke_color")}:</label>
                 <ColorPicker
                   color={settings.outstrokeColor}
                   onChange={(color) =>
@@ -1050,67 +844,58 @@ function App() {
             </div>
           </div>
 
-          <div className="img-loader-container">
-            <div className="picker">
+          <div className="w-full flex flex-col items-center gap-4 p-6 bg-base-200 rounded-box shadow-sm">
+            <div className="w-full flex justify-center">
               <Picker setCharacter={setCharacter} />
             </div>
 
-            <div
-              className="upload-container"
-              style={{ margin: "16px 0", textAlign: "center" }}>
+            <div className="flex flex-wrap justify-center gap-2 items-center w-full mt-4">
               <input
                 type="file"
                 accept="image/*"
                 onChange={handleImageUpload}
                 id="image-upload"
-                style={{ display: "none" }}
+                className="hidden"
               />
               <label htmlFor="image-upload">
-                <Button
-                  variant="outlined"
-                  component="span"
-                  color="secondary"
-                  size="small">
+                <span className="btn btn-outline btn-secondary btn-sm">
                   {t("upload_your_image")}
-                </Button>
+                </span>
               </label>
               {customImageSrc && (
-                <Button
-                  size="small"
-                  color="warning"
-                  onClick={() => setCustomImageSrc(null)}
-                  style={{ marginLeft: "10px" }}>
+                <button
+                  className="btn btn-warning btn-sm ml-2"
+                  onClick={() => setCustomImageSrc(null)}>
                   {t("reset_to_original")}
-                </Button>
+                </button>
               )}
             </div>
           </div>
 
-          <div className="buttons">
-            <Button color="secondary" onClick={copy}>
+          <div className="flex flex-wrap justify-center gap-4 mt-4">
+            <button className="btn btn-secondary" onClick={copy}>
               {t("copy")}
-            </Button>
-            <Button color="secondary" onClick={download}>
+            </button>
+            <button className="btn btn-secondary" onClick={download}>
               {t("download")}
-            </Button>
+            </button>
           </div>
         </div>
 
-        <div className="footer">
-          <Button color="secondary" onClick={() => setInfoOpen(true)}>
+        <div className="mt-8 flex flex-col items-center justify-center">
+          <button className="btn btn-link text-secondary no-underline hover:text-primary" onClick={() => setInfoOpen(true)}>
             {t("about")}
-          </Button>
+          </button>
         </div>
       </div>
 
-      <Snackbar
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-        open={openCopySnackbar}
-        onClose={() => setOpenCopySnackbar(false)}
-        message={t("copied_to_clipboard")}
-        key="copy"
-        autoHideDuration={1500}
-      />
+      {openCopySnackbar && (
+        <div className="toast toast-center toast-bottom z-50">
+          <div className="alert alert-success text-white">
+            <span>{t("copied_to_clipboard")}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

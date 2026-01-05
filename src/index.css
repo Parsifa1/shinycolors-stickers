@@ -1,8 +1,5 @@
-body {
-  margin: 0;
-  padding: 0;
-  background-color: #eeeeee;
-}
+@import "tailwindcss";
+@plugin "daisyui";
 
 @font-face {
   font-family: 'YurukaStd';
@@ -17,4 +14,17 @@ body {
 @font-face {
   font-family: 'YouWangFangYuanTi';
   src: local('YouWangFangYuanTi'), url(./fonts/攸望方圆体-中.woff2) format('woff');
+}
+
+@theme {
+  --font-yuruka: "YurukaStd", "SSFangTangTi", "YouWangFangYuanTi", sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f0f2f5;
+  font-family: var(--font-yuruka);
 }
