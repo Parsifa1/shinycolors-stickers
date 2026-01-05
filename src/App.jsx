@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback, useDeferredValue } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useDeferredValue,
+} from "react";
 
 // 字体引入
 import YurukaStd from "./fonts/YurukaStd.woff2";
@@ -61,7 +67,7 @@ function App() {
     return locales[lang][key] || key;
   };
 
-  const handleLangChange = (event, newLang) => {
+  const handleLangChange = (_, newLang) => {
     if (newLang !== null) {
       setLang(newLang);
     }
@@ -77,8 +83,8 @@ function App() {
   const [character, setCharacter] = useState(18);
   const [customImageSrc, setCustomImageSrc] = useState(null);
   const [loadedImage, setLoadedImage] = useState(null);
-  
-  const [seed, setSeed] = useState(Math.floor(Math.random() * 1000)); 
+
+  const [seed, setSeed] = useState(Math.floor(Math.random() * 1000));
 
   const [settings, setSettings] = useState({
     text: "",
@@ -98,13 +104,13 @@ function App() {
     font: "YurukaStd",
     curve: false,
     curveFactor: 6,
-    wobbly: false, 
-    wobblyScale: 0.3,   
-    wobblyRotation: 0.3 
+    wobbly: false,
+    wobblyScale: 0.3,
+    wobblyRotation: 0.3,
   });
 
   const deferredSettings = useDeferredValue(settings);
-  const deferredSeed = useDeferredValue(seed); 
+  const deferredSeed = useDeferredValue(seed);
   const isDragging = useRef(false);
   const lastPos = useRef({ x: 0, y: 0 });
 
@@ -112,19 +118,21 @@ function App() {
   useEffect(() => {
     getConfiguration().then(setConfig).catch(console.error);
     const controller = new AbortController();
-    
+
     const loadFonts = async () => {
       const criticalFonts = fontList.slice(0, 2);
       const optionalFonts = fontList.slice(2);
 
-      const criticalPromises = criticalFonts.map(f => 
-        preloadFont(f.name, f.path, controller.signal)
-          .catch(err => console.error(`Failed to load critical font ${f.name}`, err))
+      const criticalPromises = criticalFonts.map((f) =>
+        preloadFont(f.name, f.path, controller.signal).catch((err) =>
+          console.error(`Failed to load critical font ${f.name}`, err),
+        ),
       );
 
-      optionalFonts.forEach(f => {
-        preloadFont(f.name, f.path, controller.signal)
-          .catch(err => console.error(`Failed to load optional font ${f.name}`, err));
+      optionalFonts.forEach((f) => {
+        preloadFont(f.name, f.path, controller.signal).catch((err) =>
+          console.error(`Failed to load optional font ${f.name}`, err),
+        );
       });
 
       await Promise.all(criticalPromises);
@@ -140,7 +148,7 @@ function App() {
   useEffect(() => {
     const charData = characters[character];
     const def = charData.defaultText;
-    
+
     setSettings((prev) => ({
       ...prev,
       text: def.text,
@@ -154,13 +162,13 @@ function App() {
       strokeColor: charData.strokeColor,
       outstrokeColor: charData.outstrokeColor,
     }));
-    
+
     setCustomImageSrc(null);
   }, [character]);
 
   useEffect(() => {
     const img = new Image();
-    const src = customImageSrc || ("img/" + characters[character].img);
+    const src = customImageSrc || "img/" + characters[character].img;
     img.src = src;
     img.crossOrigin = "Anonymous";
 
@@ -190,7 +198,7 @@ function App() {
     if (!isNaN(val)) {
       setSeed(val);
     } else if (e.target.value === "") {
-        setSeed(0);
+      setSeed(0);
     }
   };
 
@@ -203,7 +211,7 @@ function App() {
 
   const handlePointerMove = (e) => {
     if (!isDragging.current) return;
-    if(e.cancelable && e.type === 'touchmove') e.preventDefault(); 
+    if (e.cancelable && e.type === "touchmove") e.preventDefault();
 
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -211,10 +219,10 @@ function App() {
     const dx = clientX - lastPos.current.x;
     const dy = clientY - lastPos.current.y;
 
-    setSettings(prev => ({
+    setSettings((prev) => ({
       ...prev,
       x: prev.x + dx,
-      y: prev.y + dy
+      y: prev.y + dy,
     }));
 
     lastPos.current = { x: clientX, y: clientY };
@@ -224,169 +232,198 @@ function App() {
     isDragging.current = false;
   };
 
-  const draw = useCallback((ctx) => {
-    if (!loadedImage) return;
+  const draw = useCallback(
+    (ctx) => {
+      if (!loadedImage) return;
 
-    const currentSettings = deferredSettings;
-    const currentSeed = deferredSeed;
+      const currentSettings = deferredSettings;
+      const currentSeed = deferredSeed;
 
-    document.fonts.load(`${currentSettings.s}px ${currentSettings.font}`); 
+      document.fonts.load(`${currentSettings.s}px ${currentSettings.font}`);
 
-    ctx.canvas.width = CONSTANTS.CANVAS_WIDTH;
-    ctx.canvas.height = CONSTANTS.CANVAS_HEIGHT;
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      ctx.canvas.width = CONSTANTS.CANVAS_WIDTH;
+      ctx.canvas.height = CONSTANTS.CANVAS_HEIGHT;
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-    const drawImg = () => {
-      const img = loadedImage;
-      const hRatio = ctx.canvas.width / img.width;
-      const vRatio = ctx.canvas.height / img.height;
-      const ratio = Math.min(hRatio, vRatio);
-      const centerShiftX = (ctx.canvas.width - img.width * ratio) / 2;
-      const centerShiftY = (ctx.canvas.height - img.height * ratio) / 2;
-      ctx.drawImage(img, 0, 0, img.width, img.height, centerShiftX, centerShiftY, img.width * ratio, img.height * ratio);
-    };
-
-    const drawTxt = () => {
-      const {
-        text, font, s, x, y, r, fillColor, strokeColor, outstrokeColor,
-        whiteStrokeSize, colorStrokeSize, lineSpacing, ls,
-        vertical, curve, curveFactor, 
-        wobbly, wobblyScale, wobblyRotation 
-      } = currentSettings;
-      
-      ctx.font = `${s}px ${font}, SSFangTangTi, YouWangFangYuanTi`;
-      ctx.miterLimit = CONSTANTS.MITER_LIMIT;
-      ctx.lineJoin = "round"; 
-      ctx.lineCap = "round";
-
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(r / 10);
-      ctx.textAlign = "center";
-      ctx.fillStyle = fillColor;
-
-      const drawStrokeAndFill = (char, dx, dy, pass) => {
-        if (pass === 0) {
-          ctx.strokeStyle = outstrokeColor;
-          ctx.lineWidth = whiteStrokeSize;
-          ctx.strokeText(char, dx, dy);
-        } else {
-          ctx.strokeStyle = strokeColor;
-          ctx.lineWidth = colorStrokeSize;
-          ctx.strokeText(char, dx, dy);
-          ctx.fillText(char, dx, dy);
-        }
+      const drawImg = () => {
+        const img = loadedImage;
+        const hRatio = ctx.canvas.width / img.width;
+        const vRatio = ctx.canvas.height / img.height;
+        const ratio = Math.min(hRatio, vRatio);
+        const centerShiftX = (ctx.canvas.width - img.width * ratio) / 2;
+        const centerShiftY = (ctx.canvas.height - img.height * ratio) / 2;
+        ctx.drawImage(
+          img,
+          0,
+          0,
+          img.width,
+          img.height,
+          centerShiftX,
+          centerShiftY,
+          img.width * ratio,
+          img.height * ratio,
+        );
       };
 
-      const drawEffectiveChar = (char, dx, dy, pass, index) => {
-        if (wobbly) {
-          const pseudoRandom = Math.sin(currentSeed + index * 12.34); 
-          const scale = 1 + (pseudoRandom * wobblyScale); 
-          const rotation = pseudoRandom * wobblyRotation;
+      const drawTxt = () => {
+        const {
+          text,
+          font,
+          s,
+          x,
+          y,
+          r,
+          fillColor,
+          strokeColor,
+          outstrokeColor,
+          whiteStrokeSize,
+          colorStrokeSize,
+          lineSpacing,
+          ls,
+          vertical,
+          curve,
+          curveFactor,
+          wobbly,
+          wobblyScale,
+          wobblyRotation,
+        } = currentSettings;
 
-          ctx.save();
-          ctx.translate(dx, dy);
-          ctx.rotate(rotation);
-          ctx.scale(scale, scale);
-          drawStrokeAndFill(char, 0, 0, pass);
-          ctx.restore();
-        } else {
-          drawStrokeAndFill(char, dx, dy, pass);
-        }
-      };
+        ctx.font = `${s}px ${font}, SSFangTangTi, YouWangFangYuanTi`;
+        ctx.miterLimit = CONSTANTS.MITER_LIMIT;
+        ctx.lineJoin = "round";
+        ctx.lineCap = "round";
 
-      const lines = text.split("\n");
-      let charCounter = 0; 
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(r / 10);
+        ctx.textAlign = "center";
+        ctx.fillStyle = fillColor;
 
-      if (curve) {
-        if (vertical) {
-          for (let pass = 0; pass < 2; pass++) {
+        const drawStrokeAndFill = (char, dx, dy, pass) => {
+          if (pass === 0) {
+            ctx.strokeStyle = outstrokeColor;
+            ctx.lineWidth = whiteStrokeSize;
+            ctx.strokeText(char, dx, dy);
+          } else {
+            ctx.strokeStyle = strokeColor;
+            ctx.lineWidth = colorStrokeSize;
+            ctx.strokeText(char, dx, dy);
+            ctx.fillText(char, dx, dy);
+          }
+        };
+
+        const drawEffectiveChar = (char, dx, dy, pass, index) => {
+          if (wobbly) {
+            const pseudoRandom = Math.sin(currentSeed + index * 12.34);
+            const scale = 1 + pseudoRandom * wobblyScale;
+            const rotation = pseudoRandom * wobblyRotation;
+
             ctx.save();
-            let xOffset = 0;
-            charCounter = 0; 
-            for (const line of lines) {
-              let yOffset = 0;
+            ctx.translate(dx, dy);
+            ctx.rotate(rotation);
+            ctx.scale(scale, scale);
+            drawStrokeAndFill(char, 0, 0, pass);
+            ctx.restore();
+          } else {
+            drawStrokeAndFill(char, dx, dy, pass);
+          }
+        };
+
+        const lines = text.split("\n");
+        let charCounter = 0;
+
+        if (curve) {
+          if (vertical) {
+            for (let pass = 0; pass < 2; pass++) {
               ctx.save();
-              ctx.translate(xOffset, 0);
-              for (let j = 0; j < line.length; j++) {
-                charCounter++;
-                const char = line[j];
-                const charAngle = (Math.PI / 180) * j * ((curveFactor - 6) * 3);
-                ctx.rotate(charAngle);
-                drawEffectiveChar(char, 0, yOffset, pass, charCounter);
-                yOffset += s + ls;
+              let xOffset = 0;
+              charCounter = 0;
+              for (const line of lines) {
+                let yOffset = 0;
+                ctx.save();
+                ctx.translate(xOffset, 0);
+                for (let j = 0; j < line.length; j++) {
+                  charCounter++;
+                  const char = line[j];
+                  const charAngle =
+                    (Math.PI / 180) * j * ((curveFactor - 6) * 3);
+                  ctx.rotate(charAngle);
+                  drawEffectiveChar(char, 0, yOffset, pass, charCounter);
+                  yOffset += s + ls;
+                }
+                ctx.restore();
+                xOffset += ((lineSpacing - 50) / 50 + 1) * s;
               }
               ctx.restore();
-              xOffset += ((lineSpacing - 50) / 50 + 1) * s;
             }
-            ctx.restore();
-          }
-        } else {
-          let currentY_H = 0;
-          for (const line of lines) {
-             const lineAngle = (Math.PI * line.length) / curveFactor;
-             for (let pass = 0; pass < 2; pass++) {
-               ctx.save();
-               ctx.translate(0, currentY_H);
-               let lineStartCharIndex = lines.slice(0, lines.indexOf(line)).join("").length;
-               for (let j = 0; j < line.length; j++) {
-                 const char = line[j];
-                 ctx.rotate(lineAngle / line.length / (0.3 * curveFactor));
-                 ctx.save();
-                 ctx.translate(0, -1 * s * CONSTANTS.CURVE_OFFSET_FACTOR);
-                 drawEffectiveChar(char, 0, 0, pass, lineStartCharIndex + j);
-                 ctx.restore();
-               }
-               ctx.restore();
-             }
-             currentY_H += ((lineSpacing - 50) / 50 + 1) * s; 
-          }
-        }
-      } else {
-        if (vertical) {
-          for (let pass = 0; pass < 2; pass++) {
-            let xOffset = 0;
-            charCounter = 0;
+          } else {
+            let currentY_H = 0;
             for (const line of lines) {
-              let yOffset = 0;
-              for (const char of line) {
-                charCounter++;
-                drawEffectiveChar(char, xOffset, yOffset, pass, charCounter);
-                yOffset += s + ls;
+              const lineAngle = (Math.PI * line.length) / curveFactor;
+              for (let pass = 0; pass < 2; pass++) {
+                ctx.save();
+                ctx.translate(0, currentY_H);
+                let lineStartCharIndex = lines
+                  .slice(0, lines.indexOf(line))
+                  .join("").length;
+                for (let j = 0; j < line.length; j++) {
+                  const char = line[j];
+                  ctx.rotate(lineAngle / line.length / (0.3 * curveFactor));
+                  ctx.save();
+                  ctx.translate(0, -1 * s * CONSTANTS.CURVE_OFFSET_FACTOR);
+                  drawEffectiveChar(char, 0, 0, pass, lineStartCharIndex + j);
+                  ctx.restore();
+                }
+                ctx.restore();
               }
-              xOffset += ((lineSpacing - 50) / 50 + 1) * s;
+              currentY_H += ((lineSpacing - 50) / 50 + 1) * s;
             }
           }
         } else {
-          for (let pass = 0; pass < 2; pass++) {
-            let yOffset = 0;
-            charCounter = 0;
-            for (const line of lines) {
+          if (vertical) {
+            for (let pass = 0; pass < 2; pass++) {
               let xOffset = 0;
-              for (const char of line) {
-                charCounter++;
-                const charWidth = ctx.measureText(char).width + ls;
-                drawEffectiveChar(char, xOffset, yOffset, pass, charCounter);
-                xOffset += charWidth;
+              charCounter = 0;
+              for (const line of lines) {
+                let yOffset = 0;
+                for (const char of line) {
+                  charCounter++;
+                  drawEffectiveChar(char, xOffset, yOffset, pass, charCounter);
+                  yOffset += s + ls;
+                }
+                xOffset += ((lineSpacing - 50) / 50 + 1) * s;
               }
-              yOffset += ((lineSpacing - 50) / 50 + 1) * s;
+            }
+          } else {
+            for (let pass = 0; pass < 2; pass++) {
+              let yOffset = 0;
+              charCounter = 0;
+              for (const line of lines) {
+                let xOffset = 0;
+                for (const char of line) {
+                  charCounter++;
+                  const charWidth = ctx.measureText(char).width + ls;
+                  drawEffectiveChar(char, xOffset, yOffset, pass, charCounter);
+                  xOffset += charWidth;
+                }
+                yOffset += ((lineSpacing - 50) / 50 + 1) * s;
+              }
             }
           }
         }
+        ctx.restore();
+      };
+
+      if (currentSettings.textOnTop) {
+        drawImg();
+        drawTxt();
+      } else {
+        drawTxt();
+        drawImg();
       }
-      ctx.restore();
-    };
-
-    if (currentSettings.textOnTop) {
-      drawImg();
-      drawTxt();
-    } else {
-      drawTxt();
-      drawImg();
-    }
-
-  }, [loadedImage, deferredSettings, deferredSeed, fontsLoaded]); 
-
+    },
+    [loadedImage, deferredSettings, deferredSeed, fontsLoaded],
+  );
 
   const download = async () => {
     const canvas = document.getElementsByTagName("canvas")[0];
@@ -398,7 +435,7 @@ function App() {
     link.click();
     document.body.removeChild(link);
     await log(characters[character].id, characters[character].name, "download");
-    setConfig(prev => prev ? ({ ...prev, total: prev.total + 1 }) : null);
+    setConfig((prev) => (prev ? { ...prev, total: prev.total + 1 } : null));
   };
 
   function b64toBlob(b64Data, contentType = "image/png", sliceSize = 512) {
@@ -426,7 +463,7 @@ function App() {
       ]);
       setOpenCopySnackbar(true);
       await log(characters[character].id, characters[character].name, "copy");
-      setConfig(prev => prev ? ({ ...prev, total: prev.total + 1 }) : null);
+      setConfig((prev) => (prev ? { ...prev, total: prev.total + 1 } : null));
     } catch (err) {
       console.error("Copy failed", err);
       alert(t("copy_failed"));
@@ -447,47 +484,81 @@ function App() {
   const isReady = loadedImage && fontsLoaded;
 
   return (
-    <div className="App"
-    // style={{ 
-    //   fontFamily: '"YurukaStd", "SSFangTangTi", "YouWangFangYuanTi", sans-serif' 
-    // }}
+    <div
+      className="App"
+      // style={{
+      //   fontFamily: '"YurukaStd", "SSFangTangTi", "YouWangFangYuanTi", sans-serif'
+      // }}
     >
-      <Info open={infoOpen} handleClose={() => setInfoOpen(false)} config={config} lang={lang} t={t} />
-      
+      <Info
+        open={infoOpen}
+        handleClose={() => setInfoOpen(false)}
+        config={config}
+        lang={lang}
+        t={t}
+      />
+
       {/* 语言切换栏 (替代原来的计数器) */}
-      <div className="counter" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
-        <span style={{ fontSize: '0.9rem', color: '#666' }}>{t("language")}:</span>
+      <div
+        className="counter"
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: "10px",
+        }}>
+        <span style={{ fontSize: "0.9rem", color: "#666" }}>
+          {t("language")}:
+        </span>
         <ToggleButtonGroup
           value={lang}
           exclusive
           onChange={handleLangChange}
           size="small"
           color="secondary"
-          sx={{ height: '30px' }}
-        >
-          <ToggleButton value="zh" sx={{ fontSize: '0.8rem', padding: '5px 10px' }}>中</ToggleButton>
-          <ToggleButton value="ja" sx={{ fontSize: '0.8rem', padding: '5px 10px' }}>日</ToggleButton>
-          <ToggleButton value="en" sx={{ fontSize: '0.8rem', padding: '5px 10px' }}>En</ToggleButton>
+          sx={{ height: "30px" }}>
+          <ToggleButton
+            value="zh"
+            sx={{ fontSize: "0.8rem", padding: "5px 10px" }}>
+            中
+          </ToggleButton>
+          <ToggleButton
+            value="ja"
+            sx={{ fontSize: "0.8rem", padding: "5px 10px" }}>
+            日
+          </ToggleButton>
+          <ToggleButton
+            value="en"
+            sx={{ fontSize: "0.8rem", padding: "5px 10px" }}>
+            En
+          </ToggleButton>
         </ToggleButtonGroup>
       </div>
 
       <div className="container">
-        <div className="vertical" style={{ 
-            display: 'flex', flexDirection: 'row', justifyContent: 'center', gap: '16px' 
-        }}>
-          <div style={{ width: '50px', flexShrink: 0 }}></div>
+        <div
+          className="vertical"
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "center",
+            gap: "16px",
+          }}>
+          <div style={{ width: "50px", flexShrink: 0 }}></div>
 
-          <div 
-            className="canvas-wrapper" 
-            style={{ position: 'relative', cursor: isDragging.current ? 'grabbing' : 'grab' }}
+          <div
+            className="canvas-wrapper"
+            style={{
+              position: "relative",
+              cursor: isDragging.current ? "grabbing" : "grab",
+            }}
             onMouseDown={handlePointerDown}
             onMouseMove={handlePointerMove}
             onMouseUp={handlePointerUp}
             onMouseLeave={handlePointerUp}
             onTouchStart={handlePointerDown}
             onTouchMove={handlePointerMove}
-            onTouchEnd={handlePointerUp}
-          >
+            onTouchEnd={handlePointerUp}>
             <div className="canvas">
               <Canvas draw={draw} spaceSize={settings.lineSpacing} />
             </div>
@@ -495,67 +566,117 @@ function App() {
             {!isReady && (
               <Box
                 sx={{
-                  position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-                  bgcolor: 'rgba(255, 255, 255, 0.8)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  zIndex: 10, flexDirection: 'column', gap: 1
-                }}
-              >
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "100%",
+                  bgcolor: "rgba(255, 255, 255, 0.8)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 10,
+                  flexDirection: "column",
+                  gap: 1,
+                }}>
                 <CircularProgress color="secondary" />
-                <span style={{ fontSize: '0.8rem', color: '#666' }}>{t("loading_assets")}</span>
+                <span style={{ fontSize: "0.8rem", color: "#666" }}>
+                  {t("loading_assets")}
+                </span>
               </Box>
             )}
           </div>
-          
-          <div className="vertical-controls" style={{
-              display: 'flex', flexDirection: 'row', height: '256px', alignItems: 'center',
-              width: '80px', flexShrink: 0
-          }}>
-            <Slider
-                value={
-                settings.curve && !settings.vertical 
-                    ? 256 - settings.y + settings.s * 3 
-                    : 256 - settings.y
-                }
-                onChange={(e, v) =>
-                handlePositionChange("y", 
-                    settings.curve && !settings.vertical ? 256 + settings.s * 3 - v : 256 - v
-                )
-                }
-                min={-50} max={256} step={1}
-                orientation="vertical"
-                track={false}
-                color="secondary"
-                style={{ height: '100%' }} 
-            />
-            
-            <div style={{
-                display: 'flex', flexDirection: 'column', justifyContent: 'space-around', 
-                height: '80%', flex: 1 
-            }}>
-                <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
-                    <span style={{fontSize: '0.8rem', fontWeight: 'bold', color: '#555', marginBottom: '4px', whiteSpace: 'nowrap', transform: 'scale(0.9)'}}>
-                        {t("vertical")}
-                    </span>
-                    <Switch
-                        checked={settings.vertical}
-                        onChange={(e) => updateSetting("vertical", e.target.checked)}
-                        color="secondary"
-                        style={{ margin: '0px' }}
-                    />
-                </div>
 
-                <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
-                    <span style={{fontSize: '0.8rem', fontWeight: 'bold', color: '#555', marginBottom: '4px', whiteSpace: 'nowrap', transform: 'scale(0.9)'}}>
-                        {t("text_on_top")}
-                    </span>
-                    <Switch
-                        checked={settings.textOnTop}
-                        onChange={(e) => updateSetting("textOnTop", e.target.checked)}
-                        color="secondary"
-                        style={{ margin: '0px' }}
-                    />
-                </div>
+          <div
+            className="vertical-controls"
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              height: "256px",
+              alignItems: "center",
+              width: "80px",
+              flexShrink: 0,
+            }}>
+            <Slider
+              value={
+                settings.curve && !settings.vertical ?
+                  256 - settings.y + settings.s * 3
+                : 256 - settings.y
+              }
+              onChange={(_, v) =>
+                handlePositionChange(
+                  "y",
+                  settings.curve && !settings.vertical ?
+                    256 + settings.s * 3 - v
+                  : 256 - v,
+                )
+              }
+              min={-50}
+              max={256}
+              step={1}
+              orientation="vertical"
+              track={false}
+              color="secondary"
+              style={{ height: "100%" }}
+            />
+
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-around",
+                height: "80%",
+                flex: 1,
+              }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                }}>
+                <span
+                  style={{
+                    fontSize: "0.8rem",
+                    fontWeight: "bold",
+                    color: "#555",
+                    marginBottom: "4px",
+                    whiteSpace: "nowrap",
+                    transform: "scale(0.9)",
+                  }}>
+                  {t("vertical")}
+                </span>
+                <Switch
+                  checked={settings.vertical}
+                  onChange={(e) => updateSetting("vertical", e.target.checked)}
+                  color="secondary"
+                  style={{ margin: "0px" }}
+                />
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                }}>
+                <span
+                  style={{
+                    fontSize: "0.8rem",
+                    fontWeight: "bold",
+                    color: "#555",
+                    marginBottom: "4px",
+                    whiteSpace: "nowrap",
+                    transform: "scale(0.9)",
+                  }}>
+                  {t("text_on_top")}
+                </span>
+                <Switch
+                  checked={settings.textOnTop}
+                  onChange={(e) => updateSetting("textOnTop", e.target.checked)}
+                  color="secondary"
+                  style={{ margin: "0px" }}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -564,191 +685,345 @@ function App() {
           <Slider
             className="slider-horizontal"
             value={settings.x}
-            onChange={(e, v) => handlePositionChange("x", v)}
-            min={0} max={296} step={1}
+            onChange={(_, v) => handlePositionChange("x", v)}
+            min={0}
+            max={296}
+            step={1}
             track={false}
             color="secondary"
           />
-          
+
           <div className="text_react">
             <div className="text">
               <TextField
-                label={t("text")} size="small" color="secondary"
+                label={t("text")}
+                size="small"
+                color="secondary"
                 value={settings.text}
-                multiline fullWidth
+                multiline
+                fullWidth
                 onChange={(e) => updateSetting("text", e.target.value)}
               />
             </div>
 
             <FormControl fullWidth>
-              <InputLabel id="font-select-label" color="secondary">{t("font")}</InputLabel>
+              <InputLabel id="font-select-label" color="secondary">
+                {t("font")}
+              </InputLabel>
               <Select
                 labelId="font-select-label"
                 value={settings.font}
-                label={t("font")} size="small" color="secondary"
-                onChange={(e) => updateSetting("font", e.target.value)}
-              >
+                label={t("font")}
+                size="small"
+                color="secondary"
+                onChange={(e) => updateSetting("font", e.target.value)}>
                 {fontList.map((f) => (
-                  <MenuItem key={f.name} value={f.name}>{f.name}</MenuItem>
+                  <MenuItem key={f.name} value={f.name}>
+                    {f.name}
+                  </MenuItem>
                 ))}
               </Select>
             </FormControl>
           </div>
 
-          <div className="settings" style = {{fontFamily: "YurukaStd, SSFangTangTi, YouWangFangYuanTi, sans-serif"}}>
-            
-            <div className="strokesize" style={{ display: 'flex', gap: '20px', width: '100%' ,fontFamily: "YurukaStd, SSFangTangTi, YouWangFangYuanTi, sans-serif"}}>
+          <div
+            className="settings"
+            style={{
+              fontFamily:
+                "YurukaStd, SSFangTangTi, YouWangFangYuanTi, sans-serif",
+            }}>
+            <div
+              className="strokesize"
+              style={{
+                display: "flex",
+                gap: "20px",
+                width: "100%",
+                fontFamily:
+                  "YurukaStd, SSFangTangTi, YouWangFangYuanTi, sans-serif",
+              }}>
               <div style={{ flex: 1 }}>
-                <label><nobr>{t("inner_stroke")}: </nobr></label>
+                <label>
+                  <nobr>{t("inner_stroke")}: </nobr>
+                </label>
                 <Slider
                   value={settings.colorStrokeSize}
-                  onChange={(e, v) => updateSetting("colorStrokeSize", v)}
-                  min={0} max={25} step={1}
-                  track={false} color="secondary"
-                  style={{ width: '100%' }}
+                  onChange={(_, v) => updateSetting("colorStrokeSize", v)}
+                  min={0}
+                  max={25}
+                  step={1}
+                  track={false}
+                  color="secondary"
+                  style={{ width: "100%" }}
                 />
               </div>
               <div style={{ flex: 1 }}>
-                <label><nobr>{t("outer_stroke")}: </nobr></label>
+                <label>
+                  <nobr>{t("outer_stroke")}: </nobr>
+                </label>
                 <Slider
                   value={settings.whiteStrokeSize}
-                  onChange={(e, v) => updateSetting("whiteStrokeSize", v)}
-                  min={0} max={35} step={1}
-                  track={false} color="secondary"
-                  style={{ width: '100%' }}
+                  onChange={(_, v) => updateSetting("whiteStrokeSize", v)}
+                  min={0}
+                  max={35}
+                  step={1}
+                  track={false}
+                  color="secondary"
+                  style={{ width: "100%" }}
                 />
               </div>
             </div>
 
-            <div className="normal" style={{ display: 'flex', gap: '20px', width: '100%' ,fontFamily: "YurukaStd, SSFangTangTi, YouWangFangYuanTi, sans-serif"}}>
+            <div
+              className="normal"
+              style={{
+                display: "flex",
+                gap: "20px",
+                width: "100%",
+                fontFamily:
+                  "YurukaStd, SSFangTangTi, YouWangFangYuanTi, sans-serif",
+              }}>
               <div style={{ flex: 1 }}>
                 <label>{t("rotate")}:</label>
                 <Slider
                   value={settings.r}
-                  onChange={(e, v) => updateSetting("r", v)}
-                  min={-16} max={16} step={0.1}
-                  track={false} color="secondary"
-                  style={{ width: '100%' }}
+                  onChange={(_, v) => updateSetting("r", v)}
+                  min={-16}
+                  max={16}
+                  step={0.1}
+                  track={false}
+                  color="secondary"
+                  style={{ width: "100%" }}
                 />
               </div>
-              <div style={{ flex: 1}} >
-                <label><nobr>{t("font_size")}:</nobr></label>
+              <div style={{ flex: 1 }}>
+                <label>
+                  <nobr>{t("font_size")}:</nobr>
+                </label>
                 <Slider
                   value={settings.s}
-                  onChange={(e, v) => updateSetting("s", v)}
-                  min={5} max={100} step={1}
-                  track={false} color="secondary"
-                  style={{ width: '100%' }}
+                  onChange={(_, v) => updateSetting("s", v)}
+                  min={5}
+                  max={100}
+                  step={1}
+                  track={false}
+                  color="secondary"
+                  style={{ width: "100%" }}
                 />
               </div>
             </div>
 
-            <div className="linesetting" style={{ display: 'flex', gap: '20px', width: '100%' ,fontFamily: "YurukaStd, SSFangTangTi, YouWangFangYuanTi, sans-serif"}}>
+            <div
+              className="linesetting"
+              style={{
+                display: "flex",
+                gap: "20px",
+                width: "100%",
+                fontFamily:
+                  "YurukaStd, SSFangTangTi, YouWangFangYuanTi, sans-serif",
+              }}>
               <div style={{ flex: 1 }}>
-                <label><nobr>{t("line_spacing")}: </nobr></label>
+                <label>
+                  <nobr>{t("line_spacing")}: </nobr>
+                </label>
                 <Slider
                   value={settings.lineSpacing}
-                  onChange={(e, v) => updateSetting("lineSpacing", v)}
-                  min={0} max={100} step={1}
-                  track={false} color="secondary"
-                  style={{ width: '100%' }}
+                  onChange={(_, v) => updateSetting("lineSpacing", v)}
+                  min={0}
+                  max={100}
+                  step={1}
+                  track={false}
+                  color="secondary"
+                  style={{ width: "100%" }}
                 />
               </div>
               <div style={{ flex: 1 }}>
-                <label><nobr>{t("letter_spacing")}: </nobr></label>
+                <label>
+                  <nobr>{t("letter_spacing")}: </nobr>
+                </label>
                 <Slider
                   value={settings.ls}
-                  onChange={(e, v) => updateSetting("ls", v)}
-                  min={-20} max={50} step={1}
-                  track={false} color="secondary"
-                  style={{ width: '100%' }}
+                  onChange={(_, v) => updateSetting("ls", v)}
+                  min={-20}
+                  max={50}
+                  step={1}
+                  track={false}
+                  color="secondary"
+                  style={{ width: "100%" }}
                 />
               </div>
             </div>
 
-            <div className="effects-row" style={{ display: 'flex', gap: '10px', margin: '10px 0', width: '100%' ,fontFamily: "YurukaStd, SSFangTangTi, YouWangFangYuanTi, sans-serif"}}>
-                <div style={{ flex: 1, border: '1px solid #eee', borderRadius: '8px', padding: '8px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <label style={{fontWeight: 'bold', fontSize: '0.9rem'}}>{t("curve")}</label>
-                        <Switch
-                            checked={settings.curve}
-                            onChange={(e) => updateSetting("curve", e.target.checked)}
-                            color="secondary"
-                            size="small"
-                        />
-                    </div>
-                    {settings.curve && (
-                        <div>
-                            <label style={{ fontSize: '0.75rem' }}>{t("curve_factor")}:</label>
-                            <Slider
-                                value={settings.curveFactor}
-                                onChange={(e, v) => updateSetting("curveFactor", v)}
-                                min={3} max={10} step={0.1}
-                                track={false} color="secondary" size="small"
-                                style={{ width: '100%' }}
-                            />
-                        </div>
-                    )}
+            <div
+              className="effects-row"
+              style={{
+                display: "flex",
+                gap: "10px",
+                margin: "10px 0",
+                width: "100%",
+                fontFamily:
+                  "YurukaStd, SSFangTangTi, YouWangFangYuanTi, sans-serif",
+              }}>
+              <div
+                style={{
+                  flex: 1,
+                  border: "1px solid #eee",
+                  borderRadius: "8px",
+                  padding: "8px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "5px",
+                }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}>
+                  <label style={{ fontWeight: "bold", fontSize: "0.9rem" }}>
+                    {t("curve")}
+                  </label>
+                  <Switch
+                    checked={settings.curve}
+                    onChange={(e) => updateSetting("curve", e.target.checked)}
+                    color="secondary"
+                    size="small"
+                  />
                 </div>
+                {settings.curve && (
+                  <div>
+                    <label style={{ fontSize: "0.75rem" }}>
+                      {t("curve_factor")}:
+                    </label>
+                    <Slider
+                      value={settings.curveFactor}
+                      onChange={(_, v) => updateSetting("curveFactor", v)}
+                      min={3}
+                      max={10}
+                      step={0.1}
+                      track={false}
+                      color="secondary"
+                      size="small"
+                      style={{ width: "100%" }}
+                    />
+                  </div>
+                )}
+              </div>
 
-                <div style={{ flex: 1, border: '1px solid #eee', borderRadius: '8px', padding: '8px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <label style={{fontWeight: 'bold', fontSize: '0.9rem'}}>{t("wobbly")}</label>
-                        <div style={{display: 'flex', alignItems: 'center'}}>
-                            {settings.wobbly && (
-                                <div style={{display:'flex', alignItems:'center', marginRight: '5px'}}>
-                                    <TextField
-                                        label={t("seed")}
-                                        variant="standard"
-                                        value={seed}
-                                        onChange={handleSeedChange}
-                                        color="secondary"
-                                        inputProps={{style: {padding: 0, fontSize: '0.8rem', width: '40px', textAlign: 'center'}}}
-                                        InputLabelProps={{ shrink: true, style: { fontSize: '0.7rem' } }}
-                                    />
-                                    <Button 
-                                        size="small" onClick={generateNewSeed} color="secondary" 
-                                        style={{minWidth: '20px', padding: 0, marginLeft: '2px'}}
-                                        title={t("new_seed")}
-                                    >🎲</Button>
-                                </div>
-                            )}
-                            <Switch
-                                checked={settings.wobbly}
-                                onChange={(e) => updateSetting("wobbly", e.target.checked)}
-                                color="secondary"
-                                size="small"
-                            />
-                        </div>
-                    </div>
+              <div
+                style={{
+                  flex: 1,
+                  border: "1px solid #eee",
+                  borderRadius: "8px",
+                  padding: "8px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "5px",
+                }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}>
+                  <label style={{ fontWeight: "bold", fontSize: "0.9rem" }}>
+                    {t("wobbly")}
+                  </label>
+                  <div style={{ display: "flex", alignItems: "center" }}>
                     {settings.wobbly && (
-                        <div style={{display: 'flex', gap: '5px'}}>
-                             <div style={{flex: 1}}>
-                                <label style={{ fontSize: '0.75rem' }}>{t("scale_chaos")}:</label>
-                                <Slider
-                                    value={settings.wobblyScale}
-                                    onChange={(e, v) => updateSetting("wobblyScale", v)}
-                                    min={0} max={1} step={0.01}
-                                    track={false} color="secondary" size="small"
-                                    style={{ width: '100%' }}
-                                />
-                             </div>
-                             <div style={{flex: 1}}>
-                                <label style={{ fontSize: '0.75rem' }}>{t("rotate_chaos")}:</label>
-                                <Slider
-                                    value={settings.wobblyRotation}
-                                    onChange={(e, v) => updateSetting("wobblyRotation", v)}
-                                    min={0} max={1} step={0.01}
-                                    track={false} color="secondary" size="small"
-                                    style={{ width: '100%' }}
-                                />
-                             </div>
-                        </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          marginRight: "5px",
+                        }}>
+                        <TextField
+                          label={t("seed")}
+                          variant="standard"
+                          value={seed}
+                          onChange={handleSeedChange}
+                          color="secondary"
+                          inputProps={{
+                            style: {
+                              padding: 0,
+                              fontSize: "0.8rem",
+                              width: "40px",
+                              textAlign: "center",
+                            },
+                          }}
+                          InputLabelProps={{
+                            shrink: true,
+                            style: { fontSize: "0.7rem" },
+                          }}
+                        />
+                        <Button
+                          size="small"
+                          onClick={generateNewSeed}
+                          color="secondary"
+                          style={{
+                            minWidth: "20px",
+                            padding: 0,
+                            marginLeft: "2px",
+                          }}
+                          title={t("new_seed")}>
+                          🎲
+                        </Button>
+                      </div>
                     )}
+                    <Switch
+                      checked={settings.wobbly}
+                      onChange={(e) =>
+                        updateSetting("wobbly", e.target.checked)
+                      }
+                      color="secondary"
+                      size="small"
+                    />
+                  </div>
                 </div>
+                {settings.wobbly && (
+                  <div style={{ display: "flex", gap: "5px" }}>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ fontSize: "0.75rem" }}>
+                        {t("scale_chaos")}:
+                      </label>
+                      <Slider
+                        value={settings.wobblyScale}
+                        onChange={(_, v) => updateSetting("wobblyScale", v)}
+                        min={0}
+                        max={1}
+                        step={0.01}
+                        track={false}
+                        color="secondary"
+                        size="small"
+                        style={{ width: "100%" }}
+                      />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ fontSize: "0.75rem" }}>
+                        {t("rotate_chaos")}:
+                      </label>
+                      <Slider
+                        value={settings.wobblyRotation}
+                        onChange={(_, v) => updateSetting("wobblyRotation", v)}
+                        min={0}
+                        max={1}
+                        step={0.01}
+                        track={false}
+                        color="secondary"
+                        size="small"
+                        style={{ width: "100%" }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-            
-            <div className="color-pickers-container" style = {{fontFamily: "YurukaStd, SSFangTangTi, YouWangFangYuanTi, sans-serif"}}>
+
+            <div
+              className="color-pickers-container"
+              style={{
+                fontFamily:
+                  "YurukaStd, SSFangTangTi, YouWangFangYuanTi, sans-serif",
+              }}>
               <div className="color-picker-item">
                 <label>{t("fill_color")}:</label>
                 <ColorPicker
@@ -767,18 +1042,22 @@ function App() {
                 <label>{t("outer_stroke_color")}:</label>
                 <ColorPicker
                   color={settings.outstrokeColor}
-                  onChange={(color) => updateSetting("outstrokeColor", color.hexa)}
+                  onChange={(color) =>
+                    updateSetting("outstrokeColor", color.hexa)
+                  }
                 />
               </div>
             </div>
           </div>
-          
+
           <div className="img-loader-container">
             <div className="picker">
               <Picker setCharacter={setCharacter} />
             </div>
-            
-            <div className="upload-container" style={{ margin: "16px 0", textAlign: "center" }}>
+
+            <div
+              className="upload-container"
+              style={{ margin: "16px 0", textAlign: "center" }}>
               <input
                 type="file"
                 accept="image/*"
@@ -787,26 +1066,33 @@ function App() {
                 style={{ display: "none" }}
               />
               <label htmlFor="image-upload">
-                <Button variant="outlined" component="span" color="secondary" size="small">
+                <Button
+                  variant="outlined"
+                  component="span"
+                  color="secondary"
+                  size="small">
                   {t("upload_your_image")}
                 </Button>
               </label>
               {customImageSrc && (
-                 <Button 
-                   size="small" 
-                   color="warning" 
-                   onClick={() => setCustomImageSrc(null)}
-                   style={{marginLeft: "10px"}}
-                 >
-                   {t("reset_to_original")}
-                 </Button>
+                <Button
+                  size="small"
+                  color="warning"
+                  onClick={() => setCustomImageSrc(null)}
+                  style={{ marginLeft: "10px" }}>
+                  {t("reset_to_original")}
+                </Button>
               )}
             </div>
           </div>
 
           <div className="buttons">
-            <Button color="secondary" onClick={copy}>{t("copy")}</Button>
-            <Button color="secondary" onClick={download}>{t("download")}</Button>
+            <Button color="secondary" onClick={copy}>
+              {t("copy")}
+            </Button>
+            <Button color="secondary" onClick={download}>
+              {t("download")}
+            </Button>
           </div>
         </div>
 
