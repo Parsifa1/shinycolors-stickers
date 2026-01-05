@@ -5,7 +5,6 @@ export default function Info({ open, handleClose, config }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="modal-box max-w-sm relative bg-base-100 p-6 rounded-box shadow-xl">
         <h3 className="font-bold text-lg mb-4">About</h3>
-        
         <div className="py-2">
           <h4 className="font-bold mb-2">This tool made possible by:</h4>
           <ul className="menu bg-base-200 rounded-box p-2">

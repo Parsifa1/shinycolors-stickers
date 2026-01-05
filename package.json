@@ -4,16 +4,10 @@
   "private": false,
   "homepage": "https://aldiba.github.io/shinycolors-stickers/",
   "dependencies": {
-    "@tailwindcss/postcss": "^4.1.18",
-    "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
     "@uiw/react-color-chrome": "^2.9.2",
     "axios": "^1.11.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "web-vitals": "^2.1.4",
-    "workbox-precaching": "^6.6.1"
+    "react-dom": "^18.3.1"
   },
   "scripts": {
     "dev": "vite",
@@ -44,7 +38,6 @@
     "@tailwindcss/vite": "^4.1.18",
     "@vitejs/plugin-react": "^5.1.2",
     "daisyui": "^5.5.14",
-    "eslint-config-react-app": "^7.0.1",
     "gh-pages": "^6.3.0",
     "tailwindcss": "^4.1.18",
     "vite": "^7.3.0"

@@ -1,0 +1,49 @@
+@import "tailwindcss";
+@plugin "daisyui" {
+  themes: caramellatte --default;
+}
+@theme {
+  --font-mono: "IBM Plex Mono", "monospace";
+  --font-sans:
+    "IBM Plex Mono", "Noto Sans SC", "PingFang SC", "Microsoft Yahei", "sans";
+  --font-serif:
+    "IBM Plex Mono", "Noto Serif SC", "Helvetica", "Neue", "Helvetica", "Arial",
+    "sans-serif";
+  --font-code: "Iosevka Cloudtide", "JetBrains Mono", "Consolas", "monosapce";
+}
+
+.App {
+  @apply text-center min-h-screen bg-base-100 text-base-content;
+}
+
+.container {
+  @apply flex flex-col items-center justify-center p-8 max-w-6xl mx-auto gap-8;
+}
+
+/* 语言切换栏 */
+.language-bar {
+ @apply absolute top-4 right-4 flex items-center gap-2 bg-base-100 p-2 rounded-lg shadow-sm z-10 opacity-90 hover:opacity-100 transition-opacity;
+}
+
+.canvas-wrapper {
+  @apply relative shadow-xl rounded-box overflow-hidden bg-base-100 border border-base-300;
+}
+
+.canvas {
+  height: 256px;
+  width: 296px;
+}
+
+/* 参数设置滑块 */
+.setting-range {
+  @apply range range-sm w-full;
+}
+
+/* 语言选项按钮 */
+.lang-option {
+  @apply join-item btn btn-sm btn-outline btn-secondary rounded-md;
+}
+
+.label-text {
+  @apply text-sm font-medium;
+}
