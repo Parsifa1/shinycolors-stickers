@@ -1,5 +1,7 @@
 @import "tailwindcss";
-@plugin "daisyui";
+@plugin "daisyui" {
+    themes: caramellatte --default;
+}
 
 .App {
   @apply text-center min-h-screen bg-base-100 text-base-content;
@@ -24,11 +26,11 @@
 }
 
 .vertical-controls {
-  @apply bg-base-100 rounded-box p-2 shadow-sm border border-base-200 h-[256px] flex flex-row items-center w-20 flex-shrink-0;
+  @apply bg-base-100 rounded-box p-2 shadow-sm border border-base-200 h-64 flex flex-row items-center w-20 shrink-0;
 }
 
 .horizontal {
-  @apply w-full max-w-[600px] flex flex-col gap-6;
+  @apply w-full max-w-150 flex flex-col gap-6;
 }
 
 .slider-horizontal {
@@ -50,7 +52,7 @@
 }
 
 .settings label {
-  @apply font-bold whitespace-nowrap min-w-[6rem];
+  @apply font-bold whitespace-nowrap min-w-24;
 }
 
 /* Color pickers container */

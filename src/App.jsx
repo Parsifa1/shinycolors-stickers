@@ -6,22 +6,18 @@ import {
   useDeferredValue,
 } from "react";
 
-// 字体引入
 import YurukaStd from "./fonts/YurukaStd.woff2";
 import SSFangTangTi from "./fonts/ShangShouFangTangTi.woff2";
 import YouWangFangYuanTi from "./fonts/攸望方圆体-中.woff2";
 
-// 样式与组件
 import "./App.css";
 import Canvas from "./components/Canvas";
 import characters from "./characters.json";
 import Picker from "./components/Picker";
 import Info from "./components/Info";
 
-// UI 库组件 (移除 MUI，替换为原生 HTML 元素加 DaisyUI 类名)
 import ColorPicker from "@uiw/react-color-chrome";
 
-// 工具类与本地化
 import getConfiguration from "./utils/config";
 import log from "./utils/log";
 import { preloadFont } from "./utils/preload";
@@ -469,12 +465,7 @@ function App() {
   const isReady = loadedImage && fontsLoaded;
 
   return (
-    <div
-      className="App"
-      // style={{
-      //   fontFamily: '"YurukaStd", "SSFangTangTi", "YouWangFangYuanTi", sans-serif'
-      // }}
-    >
+    <div className="App">
       <Info
         open={infoOpen}
         handleClose={() => setInfoOpen(false)}
@@ -517,59 +508,69 @@ function App() {
       </div>
 
       <div className="container font-yuruka">
-        <div className="flex flex-col md:flex-row justify-center gap-4 w-full">
-          <div className="flex flex-row justify-center items-center gap-4 bg-base-200 p-6 rounded-box shadow-md">
-            <div className="w-12 flex-shrink-0"></div>
-
-            <div
-              className="relative shadow-xl rounded-box overflow-hidden bg-white border border-base-300"
-              style={{
-                cursor: isDragging.current ? "grabbing" : "grab",
-              }}
-              onMouseDown={handlePointerDown}
-              onMouseMove={handlePointerMove}
-              onMouseUp={handlePointerUp}
-              onMouseLeave={handlePointerUp}
-              onTouchStart={handlePointerDown}
-              onTouchMove={handlePointerMove}
-              onTouchEnd={handlePointerUp}>
-              <div className="canvas">
-                <Canvas draw={draw} spaceSize={settings.lineSpacing} />
-              </div>
-
-              {!isReady && (
-                <div className="absolute top-0 left-0 w-full h-full bg-white/80 flex flex-col items-center justify-center z-10 gap-2">
-                  <span className="loading loading-spinner text-secondary"></span>
-                  <span className="text-sm text-gray-600">
-                    {t("loading_assets")}
-                  </span>
+        <div className="flex flex-col justify-center items-center gap-4 bg-base-200 p-6 rounded-box shadow-md">
+          <div className="flex flex-row justify-center gap-4 w-full">
+            <div className="flex flex-col items-center gap-2">
+              <div
+                className="relative shadow-xl rounded-box overflow-hidden bg-base-100 border border-base-300"
+                style={{
+                  cursor: isDragging.current ? "grabbing" : "grab",
+                }}
+                onMouseDown={handlePointerDown}
+                onMouseMove={handlePointerMove}
+                onMouseUp={handlePointerUp}
+                onMouseLeave={handlePointerUp}
+                onTouchStart={handlePointerDown}
+                onTouchMove={handlePointerMove}
+                onTouchEnd={handlePointerUp}>
+                <div className="canvas">
+                  <Canvas draw={draw} spaceSize={settings.lineSpacing} />
                 </div>
-              )}
-            </div>
 
-            <div className="bg-base-100 rounded-box p-2 shadow-sm border border-base-200 h-[256px] flex flex-row items-center w-20 flex-shrink-0">
+                {!isReady && (
+                  <div className="absolute top-0 left-0 w-full h-full bg-white/80 flex flex-col items-center justify-center z-10 gap-2">
+                    <span className="loading loading-spinner text-secondary"></span>
+                    <span className="text-sm text-gray-600">
+                      {t("loading_assets")}
+                    </span>
+                  </div>
+                )}
+              </div>
               <input
                 type="range"
-                min={-50}
-                max={256}
-                value={
-                  settings.curve && !settings.vertical ?
-                    256 - settings.y + settings.s * 3
-                  : 256 - settings.y
-                }
+                min={0}
+                max={296}
+                value={settings.x}
                 onChange={(e) =>
-                  handlePositionChange(
-                    "y",
-                    settings.curve && !settings.vertical ?
-                      256 + settings.s * 3 - Number(e.target.value)
-                    : 256 - Number(e.target.value),
-                  )
+                  handlePositionChange("x", Number(e.target.value))
                 }
-                className="range range-secondary range-xs h-full w-4 appearance-slider-vertical"
-                style={{ writingMode: "bt-lr", WebkitAppearance: "slider-vertical" }}
+                className="range range-secondary range-sm w-full"
               />
+            </div>
 
-              <div className="flex flex-col justify-around h-4/5 flex-1 items-center">
+            <div className="flex flex-row items-center">
+              <div className="flex flex-col w-10 items-center">
+                <input
+                  type="range"
+                  min={-50}
+                  max={256}
+                  value={
+                    settings.curve && !settings.vertical ?
+                      256 - settings.y + settings.s * 3
+                    : 256 - settings.y
+                  }
+                  onChange={(e) =>
+                    handlePositionChange(
+                      "y",
+                      settings.curve && !settings.vertical ?
+                        256 + settings.s * 3 - Number(e.target.value)
+                      : 256 - Number(e.target.value),
+                    )
+                  }
+                  className="range range-secondary range-sm w-60 -rotate-90"
+                />
+              </div>
+              <div className="flex flex-col gap-10">
                 <div className="flex flex-col items-center">
                   <span className="text-xs font-bold text-gray-600 mb-1 whitespace-nowrap scale-90">
                     {t("vertical")}
@@ -578,10 +579,11 @@ function App() {
                     type="checkbox"
                     className="toggle toggle-secondary toggle-sm"
                     checked={settings.vertical}
-                    onChange={(e) => updateSetting("vertical", e.target.checked)}
+                    onChange={(e) =>
+                      updateSetting("vertical", e.target.checked)
+                    }
                   />
                 </div>
-
                 <div className="flex flex-col items-center">
                   <span className="text-xs font-bold text-gray-600 mb-1 whitespace-nowrap scale-90">
                     {t("text_on_top")}
@@ -590,7 +592,9 @@ function App() {
                     type="checkbox"
                     className="toggle toggle-secondary toggle-sm"
                     checked={settings.textOnTop}
-                    onChange={(e) => updateSetting("textOnTop", e.target.checked)}
+                    onChange={(e) =>
+                      updateSetting("textOnTop", e.target.checked)
+                    }
                   />
                 </div>
               </div>
@@ -598,28 +602,18 @@ function App() {
           </div>
         </div>
 
-        <div className="w-full max-w-[600px] flex flex-col gap-6">
-          <input
-            type="range"
-            min={0}
-            max={296}
-            value={settings.x}
-            onChange={(e) => handlePositionChange("x", Number(e.target.value))}
-            className="range range-secondary range-sm w-full"
-          />
-
+        <div className="w-full max-w-150 flex flex-col gap-6">
           <div className="flex flex-col sm:flex-row gap-4 w-full">
-            <div className="flex-grow">
+            <div className="grow">
               <textarea
                 className="textarea textarea-secondary w-full"
                 placeholder={t("text")}
                 value={settings.text}
                 onChange={(e) => updateSetting("text", e.target.value)}
-                rows={2}
-              ></textarea>
+                rows={2}></textarea>
             </div>
 
-            <div className="form-control w-full sm:w-auto min-w-[10rem]">
+            <div className="form-control w-full sm:w-auto min-w-40">
               <label className="label">
                 <span className="label-text">{t("font")}</span>
               </label>
@@ -640,27 +634,35 @@ function App() {
             <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
               <div className="flex-1 w-full">
                 <label className="label">
-                  <span className="label-text font-bold">{t("inner_stroke")}: {settings.colorStrokeSize}</span>
+                  <span className="label-text font-bold">
+                    {t("inner_stroke")}: {settings.colorStrokeSize}
+                  </span>
                 </label>
                 <input
                   type="range"
                   min={0}
                   max={25}
                   value={settings.colorStrokeSize}
-                  onChange={(e) => updateSetting("colorStrokeSize", Number(e.target.value))}
+                  onChange={(e) =>
+                    updateSetting("colorStrokeSize", Number(e.target.value))
+                  }
                   className="range range-secondary range-xs"
                 />
               </div>
               <div className="flex-1 w-full">
                 <label className="label">
-                  <span className="label-text font-bold">{t("outer_stroke")}: {settings.whiteStrokeSize}</span>
+                  <span className="label-text font-bold">
+                    {t("outer_stroke")}: {settings.whiteStrokeSize}
+                  </span>
                 </label>
                 <input
                   type="range"
                   min={0}
                   max={35}
                   value={settings.whiteStrokeSize}
-                  onChange={(e) => updateSetting("whiteStrokeSize", Number(e.target.value))}
+                  onChange={(e) =>
+                    updateSetting("whiteStrokeSize", Number(e.target.value))
+                  }
                   className="range range-secondary range-xs"
                 />
               </div>
@@ -669,7 +671,9 @@ function App() {
             <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
               <div className="flex-1 w-full">
                 <label className="label">
-                  <span className="label-text font-bold">{t("rotate")}: {settings.r}</span>
+                  <span className="label-text font-bold">
+                    {t("rotate")}: {settings.r}
+                  </span>
                 </label>
                 <input
                   type="range"
@@ -683,7 +687,9 @@ function App() {
               </div>
               <div className="flex-1 w-full">
                 <label className="label">
-                  <span className="label-text font-bold">{t("font_size")}: {settings.s}</span>
+                  <span className="label-text font-bold">
+                    {t("font_size")}: {settings.s}
+                  </span>
                 </label>
                 <input
                   type="range"
@@ -699,20 +705,26 @@ function App() {
             <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
               <div className="flex-1 w-full">
                 <label className="label">
-                  <span className="label-text font-bold">{t("line_spacing")}: {settings.lineSpacing}</span>
+                  <span className="label-text font-bold">
+                    {t("line_spacing")}: {settings.lineSpacing}
+                  </span>
                 </label>
                 <input
                   type="range"
                   min={0}
                   max={100}
                   value={settings.lineSpacing}
-                  onChange={(e) => updateSetting("lineSpacing", Number(e.target.value))}
+                  onChange={(e) =>
+                    updateSetting("lineSpacing", Number(e.target.value))
+                  }
                   className="range range-secondary range-xs"
                 />
               </div>
               <div className="flex-1 w-full">
                 <label className="label">
-                  <span className="label-text font-bold">{t("letter_spacing")}: {settings.ls}</span>
+                  <span className="label-text font-bold">
+                    {t("letter_spacing")}: {settings.ls}
+                  </span>
                 </label>
                 <input
                   type="range"
@@ -726,7 +738,7 @@ function App() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 w-full my-2">
-              <div className="flex-1 border border-base-200 rounded-lg p-3 flex flex-col gap-2 bg-white">
+              <div className="flex-1 border border-base-200 rounded-lg p-3 flex flex-col gap-2 bg-base-100">
                 <div className="flex justify-between items-center">
                   <span className="font-bold text-sm">{t("curve")}</span>
                   <input
@@ -739,7 +751,9 @@ function App() {
                 {settings.curve && (
                   <div>
                     <label className="label py-1">
-                      <span className="label-text-alt">{t("curve_factor")}: {settings.curveFactor}</span>
+                      <span className="label-text-alt">
+                        {t("curve_factor")}: {settings.curveFactor}
+                      </span>
                     </label>
                     <input
                       type="range"
@@ -747,22 +761,24 @@ function App() {
                       max={10}
                       step={0.1}
                       value={settings.curveFactor}
-                      onChange={(e) => updateSetting("curveFactor", Number(e.target.value))}
+                      onChange={(e) =>
+                        updateSetting("curveFactor", Number(e.target.value))
+                      }
                       className="range range-secondary range-xs"
                     />
                   </div>
                 )}
               </div>
 
-              <div className="flex-1 border border-base-200 rounded-lg p-3 flex flex-col gap-2 bg-white">
+              <div className="flex-1 border border-base-200 rounded-lg p-3 flex flex-col gap-2 bg-base-100">
                 <div className="flex justify-between items-center">
                   <span className="font-bold text-sm">{t("wobbly")}</span>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-0">
                     {settings.wobbly && (
-                      <div className="flex items-center gap-1">
+                      <div className="flex gap-1">
                         <input
                           type="text"
-                          className="input input-bordered input-xs w-12 text-center"
+                          className="range w-35 border rounded-box px-1 text-center text-sm"
                           value={seed}
                           onChange={handleSeedChange}
                         />
@@ -778,7 +794,9 @@ function App() {
                       type="checkbox"
                       className="toggle toggle-secondary toggle-sm"
                       checked={settings.wobbly}
-                      onChange={(e) => updateSetting("wobbly", e.target.checked)}
+                      onChange={(e) =>
+                        updateSetting("wobbly", e.target.checked)
+                      }
                     />
                   </div>
                 </div>
@@ -786,7 +804,9 @@ function App() {
                   <div className="flex gap-2">
                     <div className="flex-1">
                       <label className="label py-1">
-                        <span className="label-text-alt">{t("scale_chaos")}</span>
+                        <span className="label-text-alt">
+                          {t("scale_chaos")}
+                        </span>
                       </label>
                       <input
                         type="range"
@@ -794,13 +814,17 @@ function App() {
                         max={1}
                         step={0.01}
                         value={settings.wobblyScale}
-                        onChange={(e) => updateSetting("wobblyScale", Number(e.target.value))}
+                        onChange={(e) =>
+                          updateSetting("wobblyScale", Number(e.target.value))
+                        }
                         className="range range-secondary range-xs"
                       />
                     </div>
                     <div className="flex-1">
                       <label className="label py-1">
-                        <span className="label-text-alt">{t("rotate_chaos")}</span>
+                        <span className="label-text-alt">
+                          {t("rotate_chaos")}
+                        </span>
                       </label>
                       <input
                         type="range"
@@ -808,7 +832,12 @@ function App() {
                         max={1}
                         step={0.01}
                         value={settings.wobblyRotation}
-                        onChange={(e) => updateSetting("wobblyRotation", Number(e.target.value))}
+                        onChange={(e) =>
+                          updateSetting(
+                            "wobblyRotation",
+                            Number(e.target.value),
+                          )
+                        }
                         className="range range-secondary range-xs"
                       />
                     </div>
@@ -822,20 +851,36 @@ function App() {
                 <label className="text-sm font-bold">{t("fill_color")}:</label>
                 <ColorPicker
                   color={settings.fillColor}
+                  style={{
+                    background: "var(--color-base-100)",
+                    border: "var(--color-base-200)",
+                  }}
                   onChange={(color) => updateSetting("fillColor", color.hexa)}
                 />
               </div>
               <div className="flex flex-col items-center gap-2">
-                <label className="text-sm font-bold">{t("inner_stroke_color")}:</label>
+                <label className="text-sm font-bold">
+                  {t("inner_stroke_color")}:
+                </label>
                 <ColorPicker
                   color={settings.strokeColor}
+                  style={{
+                    background: "var(--color-base-100)",
+                    border: "var(--color-base-200)",
+                  }}
                   onChange={(color) => updateSetting("strokeColor", color.hexa)}
                 />
               </div>
               <div className="flex flex-col items-center gap-2">
-                <label className="text-sm font-bold">{t("outer_stroke_color")}:</label>
+                <label className="text-sm font-bold">
+                  {t("outer_stroke_color")}:
+                </label>
                 <ColorPicker
                   color={settings.outstrokeColor}
+                  style={{
+                    background: "var(--color-base-100)",
+                    border: "var(--color-base-200)",
+                  }}
                   onChange={(color) =>
                     updateSetting("outstrokeColor", color.hexa)
                   }
@@ -880,12 +925,6 @@ function App() {
               {t("download")}
             </button>
           </div>
-        </div>
-
-        <div className="mt-8 flex flex-col items-center justify-center">
-          <button className="btn btn-link text-secondary no-underline hover:text-primary" onClick={() => setInfoOpen(true)}>
-            {t("about")}
-          </button>
         </div>
       </div>
 
