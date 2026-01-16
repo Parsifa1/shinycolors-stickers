@@ -246,7 +246,7 @@ MITER_LIMIT: 2.5, CURVE_OFFSET_FACTOR: 3.5
 
 ### 进行更改时
 - 运行 `pnpm dev` 进行可视化测试
-- 运行 `npx tsc --noEmit` 检查类型错误
+- 运行 `pnpm tsc --noEmit` 检查类型错误
 - 提交前运行 `pnpm build` 验证无构建错误
 - 修改 Display.tsx 时检查 canvas 渲染
 - 修改 locales.ts 时测试所有三种语言

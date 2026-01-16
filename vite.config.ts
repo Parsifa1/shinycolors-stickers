@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
-  base: '/shinycolors-stickers/',
+  base: '/',
   build: {
     outDir: 'build',
   },
