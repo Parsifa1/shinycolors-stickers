@@ -170,6 +170,7 @@ export default function App() {
         }),
       ]);
       setShowCopySnackbar(true);
+      setTimeout(() => setShowCopySnackbar(false), 2000);
       await log(characters[character].id, characters[character].name, "copy");
       incrementConfigTotal();
     } catch (err) {
