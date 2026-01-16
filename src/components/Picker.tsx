@@ -2,16 +2,23 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import characters from "../characters.json";
 import useCanvasStore from "../stores/useCanvasStore";
 import type { CanvasStore } from "../types";
+import useUIStore from "../stores/useUIStore";
 
 export default function Picker() {
-  const setCharacter = useCanvasStore((state: CanvasStore) => state.setCharacter);
+  const setCharacter = useCanvasStore(
+    (state: CanvasStore) => state.setCharacter,
+  );
+  const t = useUIStore((state) => state.t);
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     }
@@ -55,7 +62,7 @@ export default function Picker() {
   return (
     <div className="relative" ref={dropdownRef}>
       <button className="btn btn-secondary" onClick={() => setIsOpen(!isOpen)}>
-        Pick character
+      {t("select_character")}
       </button>
 
       {isOpen && (

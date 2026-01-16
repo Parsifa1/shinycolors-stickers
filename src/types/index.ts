@@ -87,7 +87,7 @@ export interface UIStore extends UIState {
   setShowCopySnackbar: (show: boolean) => void;
   setConfig: (config: Config | null) => void;
   incrementConfigTotal: () => void;
-  t: (key: string) => string;
+  t: (key: LocaleKey) => string;
 }
 
 export type LocaleKey = 
@@ -95,6 +95,7 @@ export type LocaleKey =
   | "copy"
   | "download"
   | "about"
+  | "select_character"
   | "copied_to_clipboard"
   | "copy_failed"
   | "upload_your_image"
