@@ -17,6 +17,9 @@ export async function preloadFont(fontFamily, url, signal = undefined) {
     document.fonts.add(font);
     console.info(`Font ${fontFamily} preload done.`);
   } catch (error) {
+    if (error.name === 'AbortError') {
+      throw error;
+    }
     console.error(error);
   }
 }

@@ -1,24 +1,47 @@
 import Canvas from "./Canvas";
 import { useRef, useCallback, useDeferredValue } from "react";
+import { useShallow } from "zustand/shallow";
 import { CONSTANTS } from "../utils/constants";
+import useSettingsStore from "../stores/useSettingsStore";
+import useCanvasStore from "../stores/useCanvasStore";
+import useUIStore from "../stores/useUIStore";
 
-export default function Display({
-  t,
-  seed,
-  settings,
-  setSettings,
-  loadedImage,
-  fontsLoaded,
-}) {
+export default function Display({ loadedImage, fontsLoaded }) {
+  const t = useUIStore((state) => state.t);
+  const seed = useCanvasStore((state) => state.seed);
+
+  const settings = useSettingsStore(
+    useShallow((state) => ({
+      text: state.text,
+      x: state.x,
+      y: state.y,
+      s: state.s,
+      ls: state.ls,
+      r: state.r,
+      lineSpacing: state.lineSpacing,
+      fillColor: state.fillColor,
+      strokeColor: state.strokeColor,
+      outstrokeColor: state.outstrokeColor,
+      colorStrokeSize: state.colorStrokeSize,
+      whiteStrokeSize: state.whiteStrokeSize,
+      vertical: state.vertical,
+      textOnTop: state.textOnTop,
+      font: state.font,
+      curve: state.curve,
+      curveFactor: state.curveFactor,
+      wobbly: state.wobbly,
+      wobblyScale: state.wobblyScale,
+      wobblyRotation: state.wobblyRotation,
+    })),
+  );
+
+  const { updateSetting, updatePosition } = useSettingsStore();
+
   const deferredSettings = useDeferredValue(settings);
   const deferredSeed = useDeferredValue(seed);
   const isDragging = useRef(false);
   const lastPos = useRef({ x: 0, y: 0 });
   const isReady = loadedImage && fontsLoaded;
-
-  const updateSetting = (key, value) => {
-    setSettings((prev) => ({ ...prev, [key]: value }));
-  };
 
   const handlePointerDown = (e) => {
     isDragging.current = true;
@@ -37,11 +60,7 @@ export default function Display({
     const dx = clientX - lastPos.current.x;
     const dy = clientY - lastPos.current.y;
 
-    setSettings((prev) => ({
-      ...prev,
-      x: prev.x + dx,
-      y: prev.y + dy,
-    }));
+    updatePosition(dx, dy);
 
     lastPos.current = { x: clientX, y: clientY };
   };
@@ -51,13 +70,13 @@ export default function Display({
   };
 
   const draw = useCallback(
-    (ctx) => {
+    async (ctx) => {
       if (!loadedImage) return;
 
       const currentSettings = deferredSettings;
       const currentSeed = deferredSeed;
 
-      document.fonts.load(`${currentSettings.s}px ${currentSettings.font}`);
+      await document.fonts.load(`${currentSettings.s}px ${currentSettings.font}`);
 
       ctx.canvas.width = CONSTANTS.CANVAS_WIDTH;
       ctx.canvas.height = CONSTANTS.CANVAS_HEIGHT;

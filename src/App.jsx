@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+import { useShallow } from "zustand/shallow";
 import YurukaStd from "./fonts/YurukaStd.woff2";
 import SSFangTangTi from "./fonts/ShangShouFangTangTi.woff2";
 import YouWangFangYuanTi from "./fonts/攸望方圆体-中.woff2";
@@ -10,9 +11,10 @@ import ColorPicker from "@uiw/react-color-chrome";
 import getConfiguration from "./utils/config";
 import log from "./utils/log";
 import { preloadFont } from "./utils/preload";
-import locales from "./locales";
-import { CONSTANTS } from "./utils/constants";
 import Ranges from "./components/Range";
+import useSettingsStore from "./stores/useSettingsStore";
+import useCanvasStore from "./stores/useCanvasStore";
+import useUIStore from "./stores/useUIStore";
 
 const { ClipboardItem } = window;
 
@@ -23,45 +25,42 @@ const fontList = [
 ];
 
 export default function App() {
-  const [lang, setLang] = useState("zh");
-  const t = (key) => locales[lang][key] || key;
+  const { lang, setLang, fontsLoaded, setFontsLoaded, showCopySnackbar, setShowCopySnackbar, setConfig, incrementConfigTotal, t } = useUIStore();
+
+  const {
+    character,
+    loadedImage,
+    customImageSrc,
+    seed,
+    setLoadedImage,
+    setCustomImageSrc,
+    clearCustomImage,
+    setSeed,
+    generateNewSeed,
+  } = useCanvasStore();
+
+  const settings = useSettingsStore(
+    useShallow((state) => ({
+      text: state.text,
+      font: state.font,
+      curve: state.curve,
+      curveFactor: state.curveFactor,
+      wobbly: state.wobbly,
+      wobblyScale: state.wobblyScale,
+      wobblyRotation: state.wobblyRotation,
+      fillColor: state.fillColor,
+      strokeColor: state.strokeColor,
+      outstrokeColor: state.outstrokeColor,
+    })),
+  );
+
+  const { updateSetting, applyCharacterDefaults } = useSettingsStore();
+
   const handleLangChange = (_, newLang) => {
     if (newLang !== null) {
       setLang(newLang);
     }
   };
-
-  const [_, setConfig] = useState(null);
-  // const [infoOpen, setInfoOpen] = useState(false);
-  const [openCopySnackbar, setOpenCopySnackbar] = useState(false);
-  const [fontsLoaded, setFontsLoaded] = useState(false);
-  const [character, setCharacter] = useState(18);
-  const [loadedImage, setLoadedImage] = useState(null);
-  const [customImageSrc, setCustomImageSrc] = useState(null);
-  const [seed, setSeed] = useState(Math.floor(Math.random() * 1000));
-
-  const [settings, setSettings] = useState({
-    text: "",
-    x: 0,
-    y: 0,
-    s: CONSTANTS.DEFAULT_FONT_SIZE,
-    ls: 0,
-    r: 0,
-    lineSpacing: CONSTANTS.DEFAULT_LINE_SPACING,
-    fillColor: "#ffffff",
-    strokeColor: "#000000",
-    outstrokeColor: "#ffffff",
-    colorStrokeSize: 5,
-    whiteStrokeSize: 10,
-    vertical: false,
-    textOnTop: true,
-    font: "YurukaStd",
-    curve: false,
-    curveFactor: 6,
-    wobbly: false,
-    wobblyScale: 0.3,
-    wobblyRotation: 0.3,
-  });
 
   useEffect(() => {
     getConfiguration().then(setConfig).catch(console.error);
@@ -72,46 +71,42 @@ export default function App() {
       const optionalFonts = fontList.slice(2);
 
       const criticalPromises = criticalFonts.map((f) =>
-        preloadFont(f.name, f.path, controller.signal).catch((err) =>
-          console.error(`Failed to load critical font ${f.name}`, err),
-        ),
+        preloadFont(f.name, f.path, controller.signal).catch((err) => {
+          if (err.name === 'AbortError') {
+            throw err;
+          }
+          console.error(`Failed to load critical font ${f.name}`, err);
+        }),
       );
 
       optionalFonts.forEach((f) => {
-        preloadFont(f.name, f.path, controller.signal).catch((err) =>
-          console.error(`Failed to load optional font ${f.name}`, err),
-        );
+        preloadFont(f.name, f.path, controller.signal).catch((err) => {
+          if (err.name !== 'AbortError') {
+            console.error(`Failed to load optional font ${f.name}`, err);
+          }
+        });
       });
 
-      await Promise.all(criticalPromises);
-      console.log("Critical fonts loaded! UI Unlocked.");
-      setFontsLoaded(true);
+      try {
+        await Promise.all(criticalPromises);
+        console.log("Critical fonts loaded! UI Unlocked.");
+        setFontsLoaded(true);
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error('Font loading error:', err);
+        }
+      }
     };
 
     loadFonts();
     return () => controller.abort();
-  }, []);
+  }, [setConfig, setFontsLoaded]);
 
   useEffect(() => {
     const charData = characters[character];
-    const def = charData.defaultText;
-
-    setSettings((prev) => ({
-      ...prev,
-      text: def.text,
-      x: def.x,
-      y: def.y,
-      s: def.s,
-      ls: def.ls,
-      r: def.r,
-      vertical: charData.vertical,
-      fillColor: charData.fillColor,
-      strokeColor: charData.strokeColor,
-      outstrokeColor: charData.outstrokeColor,
-    }));
-
-    setCustomImageSrc(null);
-  }, [character]);
+    applyCharacterDefaults(charData);
+    clearCustomImage();
+  }, [character, applyCharacterDefaults, clearCustomImage]);
 
   useEffect(() => {
     const img = new Image();
@@ -126,15 +121,7 @@ export default function App() {
     return () => {
       img.onload = null;
     };
-  }, [character, customImageSrc]);
-
-  const updateSetting = (key, value) => {
-    setSettings((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const generateNewSeed = () => {
-    setSeed(Math.floor(Math.random() * 10000));
-  };
+  }, [character, customImageSrc, setLoadedImage]);
 
   const handleSeedChange = (e) => {
     const val = parseInt(e.target.value, 10);
@@ -155,7 +142,7 @@ export default function App() {
     link.click();
     document.body.removeChild(link);
     await log(characters[character].id, characters[character].name, "download");
-    setConfig((prev) => (prev ? { ...prev, total: prev.total + 1 } : null));
+    incrementConfigTotal();
   };
 
   function b64toBlob(b64Data, contentType = "image/png", sliceSize = 512) {
@@ -181,9 +168,9 @@ export default function App() {
           "image/png": b64toBlob(canvas.toDataURL().split(",")[1]),
         }),
       ]);
-      setOpenCopySnackbar(true);
+      setShowCopySnackbar(true);
       await log(characters[character].id, characters[character].name, "copy");
-      setConfig((prev) => (prev ? { ...prev, total: prev.total + 1 } : null));
+      incrementConfigTotal();
     } catch (err) {
       console.error("Copy failed", err);
       alert(t("copy_failed"));
@@ -225,10 +212,6 @@ export default function App() {
       </div>
       <div className="container">
         <Display
-          t={t}
-          seed={seed}
-          settings={settings}
-          setSettings={setSettings}
           loadedImage={loadedImage}
           fontsLoaded={fontsLoaded}
         />
@@ -259,7 +242,7 @@ export default function App() {
             </div>
           </div>
           <div className="flex flex-col gap-6 w-full">
-            <Ranges t={t} settings={settings} updateSetting={updateSetting} />
+            <Ranges />
             <div className="flex flex-col sm:flex-row gap-4 w-full my-2">
               <div className="flex-1 border border-base-200 rounded-lg p-3 flex flex-col gap-2 bg-base-100">
                 <div className="flex justify-between items-center">
@@ -370,7 +353,7 @@ export default function App() {
                 { label: "inner_stroke_color", option: "strokeColor" },
                 { label: "outer_stroke_color", option: "outstrokeColor" },
               ].map(({ label, option }) => (
-                <div className="flex flex-col items-center gap-2">
+                <div key={option} className="flex flex-col items-center gap-2">
                   <label className="text-sm font-bold">{t(label)}:</label>
                   <ColorPicker
                     color={settings[option]}
@@ -386,7 +369,7 @@ export default function App() {
           </div>
           <div className="w-full flex flex-col items-center gap-4 p-6 bg-base-200 rounded-box shadow-sm">
             <div className="w-full flex justify-center">
-              <Picker setCharacter={setCharacter} />
+              <Picker />
             </div>
             <div className="flex flex-wrap justify-center gap-2 items-center w-full mt-4">
               <input
@@ -404,7 +387,7 @@ export default function App() {
               {customImageSrc && (
                 <button
                   className="btn btn-warning btn-sm ml-2"
-                  onClick={() => setCustomImageSrc(null)}>
+                  onClick={clearCustomImage}>
                   {t("reset_to_original")}
                 </button>
               )}
@@ -420,7 +403,7 @@ export default function App() {
           </div>
         </div>
       </div>
-      {openCopySnackbar && (
+      {showCopySnackbar && (
         <div className="toast toast-center toast-bottom z-50">
           <div className="alert alert-success text-white">
             <span>{t("copied_to_clipboard")}</span>

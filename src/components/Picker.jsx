@@ -1,12 +1,13 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import characters from "../characters.json";
+import useCanvasStore from "../stores/useCanvasStore";
 
-export default function Picker({ setCharacter }) {
+export default function Picker() {
+  const setCharacter = useCanvasStore((state) => state.setCharacter);
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
   const dropdownRef = useRef(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -47,7 +48,7 @@ export default function Picker({ setCharacter }) {
         }
         return null;
       })
-      .filter(Boolean); // Filter out nulls
+      .filter(Boolean);
   }, [search, setCharacter]);
 
   return (
