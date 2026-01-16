@@ -1,11 +1,18 @@
-import { useShallow } from "zustand/shallow";
 import useSettingsStore from "../stores/useSettingsStore";
 import useUIStore from "../stores/useUIStore";
+import type { SettingsState, SettingsStore, UIStore } from "../types/index";
 
-function Range({ min, max, option, name }) {
-  const t = useUIStore((state) => state.t);
-  const value = useSettingsStore((state) => state[option]);
-  const updateSetting = useSettingsStore((state) => state.updateSetting);
+interface RangeItemProps {
+  min: number;
+  max: number;
+  option: keyof SettingsState;
+  name: string;
+}
+
+function Range({ min, max, option, name }: RangeItemProps) {
+  const t = useUIStore((state: UIStore) => state.t);
+  const value = useSettingsStore((state: SettingsStore) => state[option] as number);
+  const updateSetting = useSettingsStore((state: SettingsStore) => state.updateSetting);
 
   return (
     <div className="flex-1 w-full">
@@ -26,7 +33,12 @@ function Range({ min, max, option, name }) {
   );
 }
 
-const rangelist = [
+const rangelist: ReadonlyArray<{
+  option: keyof SettingsState;
+  name: string;
+  min: number;
+  max: number;
+}> = [
   { option: "colorStrokeSize", name: "inner_stroke", min: 0, max: 25 },
   { option: "whiteStrokeSize", name: "outer_stroke", min: 0, max: 35 },
   { option: "r", name: "rotate", min: -16, max: 16 },

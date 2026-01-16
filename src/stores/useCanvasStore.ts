@@ -1,7 +1,8 @@
 import { create } from "zustand";
+import type { CanvasStore } from "../types/index";
 import characters from "../characters.json";
 
-const useCanvasStore = create((set, get) => ({
+const useCanvasStore = create<CanvasStore>((set, get) => ({
   character: 18,
   loadedImage: null,
   customImageSrc: null,

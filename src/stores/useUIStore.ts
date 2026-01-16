@@ -1,7 +1,8 @@
 import { create } from "zustand";
+import type { UIStore } from "../types/index";
 import locales from "../locales";
 
-const useUIStore = create((set, get) => ({
+const useUIStore = create<UIStore>((set, get) => ({
   lang: "zh",
   fontsLoaded: false,
   showCopySnackbar: false,
@@ -20,9 +21,9 @@ const useUIStore = create((set, get) => ({
       config: state.config ? { ...state.config, total: state.config.total + 1 } : null,
     })),
 
-  t: (key) => {
+  t: (key: string) => {
     const { lang } = get();
-    return locales[lang][key] || key;
+    return (locales[lang] as Record<string, string>)[key] || key;
   },
 }));
 

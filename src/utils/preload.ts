@@ -1,10 +1,4 @@
-/**
- * Preload the font resource and add it to document.
- * @param {string} fontFamily font family name
- * @param {string | URL} url font resource URL
- * @param {AbortSignal?} signal abort signal to cancel the request
- */
-export async function preloadFont(fontFamily, url, signal = undefined) {
+export async function preloadFont(fontFamily: string, url: string | URL, signal: AbortSignal | undefined = undefined): Promise<void> {
   try {
     const response = await fetch(url, {
       headers: {
@@ -17,7 +11,7 @@ export async function preloadFont(fontFamily, url, signal = undefined) {
     document.fonts.add(font);
     console.info(`Font ${fontFamily} preload done.`);
   } catch (error) {
-    if (error.name === 'AbortError') {
+    if (error instanceof Error && error.name === 'AbortError') {
       throw error;
     }
     console.error(error);

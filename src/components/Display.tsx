@@ -5,8 +5,9 @@ import { CONSTANTS } from "../utils/constants";
 import useSettingsStore from "../stores/useSettingsStore";
 import useCanvasStore from "../stores/useCanvasStore";
 import useUIStore from "../stores/useUIStore";
+import type { DisplayProps } from "../types/index";
 
-export default function Display({ loadedImage, fontsLoaded }) {
+export default function Display({ loadedImage, fontsLoaded }: DisplayProps) {
   const t = useUIStore((state) => state.t);
   const seed = useCanvasStore((state) => state.seed);
 
@@ -43,19 +44,21 @@ export default function Display({ loadedImage, fontsLoaded }) {
   const lastPos = useRef({ x: 0, y: 0 });
   const isReady = loadedImage && fontsLoaded;
 
-  const handlePointerDown = (e) => {
+  const handlePointerDown = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
     isDragging.current = true;
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const touch = 'touches' in e ? e.touches[0] : null;
+    const clientX = touch ? touch.clientX : (e as React.MouseEvent).clientX;
+    const clientY = touch ? touch.clientY : (e as React.MouseEvent).clientY;
     lastPos.current = { x: clientX, y: clientY };
   };
 
-  const handlePointerMove = (e) => {
+  const handlePointerMove = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
     if (!isDragging.current) return;
     if (e.cancelable && e.type === "touchmove") e.preventDefault();
 
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const touch = 'touches' in e ? e.touches[0] : null;
+    const clientX = touch ? touch.clientX : (e as React.MouseEvent).clientX;
+    const clientY = touch ? touch.clientY : (e as React.MouseEvent).clientY;
 
     const dx = clientX - lastPos.current.x;
     const dy = clientY - lastPos.current.y;
@@ -70,7 +73,7 @@ export default function Display({ loadedImage, fontsLoaded }) {
   };
 
   const draw = useCallback(
-    async (ctx) => {
+    async (ctx: CanvasRenderingContext2D) => {
       if (!loadedImage) return;
 
       const currentSettings = deferredSettings;
@@ -136,7 +139,7 @@ export default function Display({ loadedImage, fontsLoaded }) {
         ctx.textAlign = "center";
         ctx.fillStyle = fillColor;
 
-        const drawStrokeAndFill = (char, dx, dy, pass) => {
+        const drawStrokeAndFill = (char: string, dx: number, dy: number, pass: number) => {
           if (pass === 0) {
             ctx.strokeStyle = outstrokeColor;
             ctx.lineWidth = whiteStrokeSize;
@@ -149,7 +152,7 @@ export default function Display({ loadedImage, fontsLoaded }) {
           }
         };
 
-        const drawEffectiveChar = (char, dx, dy, pass, index) => {
+        const drawEffectiveChar = (char: string, dx: number, dy: number, pass: number, index: number) => {
           if (wobbly) {
             const pseudoRandom = Math.sin(currentSeed + index * 12.34);
             const scale = 1 + pseudoRandom * wobblyScale;

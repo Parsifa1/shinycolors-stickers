@@ -1,4 +1,12 @@
-export default function Info({ open, handleClose, config }) {
+import type { Config } from "../types/index";
+
+interface InfoProps {
+  open: boolean;
+  handleClose: () => void;
+  config: Config | null;
+}
+
+export default function Info({ open, handleClose, config }: InfoProps) {
   if (!open) return null;
 
   return (

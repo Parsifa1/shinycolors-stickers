@@ -1,7 +1,8 @@
 import { create } from "zustand";
+import type { SettingsStore, SettingsState } from "../types/index";
 import { CONSTANTS } from "../utils/constants";
 
-const defaultSettings = {
+const defaultSettings: SettingsState = {
   text: "",
   x: 0,
   y: 0,
@@ -24,7 +25,7 @@ const defaultSettings = {
   wobblyRotation: 0.3,
 };
 
-const useSettingsStore = create((set) => ({
+const useSettingsStore = create<SettingsStore>((set) => ({
   ...defaultSettings,
 
   updateSetting: (key, value) => set({ [key]: value }),

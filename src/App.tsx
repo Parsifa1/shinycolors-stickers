@@ -15,6 +15,7 @@ import Ranges from "./components/Range";
 import useSettingsStore from "./stores/useSettingsStore";
 import useCanvasStore from "./stores/useCanvasStore";
 import useUIStore from "./stores/useUIStore";
+import type { Language, SettingsStore } from "./types";
 
 const { ClipboardItem } = window;
 
@@ -40,7 +41,7 @@ export default function App() {
   } = useCanvasStore();
 
   const settings = useSettingsStore(
-    useShallow((state) => ({
+    useShallow((state: SettingsStore) => ({
       text: state.text,
       font: state.font,
       curve: state.curve,
@@ -56,7 +57,7 @@ export default function App() {
 
   const { updateSetting, applyCharacterDefaults } = useSettingsStore();
 
-  const handleLangChange = (_, newLang) => {
+  const handleLangChange = (_: unknown, newLang: Language) => {
     if (newLang !== null) {
       setLang(newLang);
     }
@@ -92,7 +93,7 @@ export default function App() {
         console.log("Critical fonts loaded! UI Unlocked.");
         setFontsLoaded(true);
       } catch (err) {
-        if (err.name !== 'AbortError') {
+        if (err instanceof Error && err.name !== 'AbortError') {
           console.error('Font loading error:', err);
         }
       }
@@ -123,7 +124,7 @@ export default function App() {
     };
   }, [character, customImageSrc, setLoadedImage]);
 
-  const handleSeedChange = (e) => {
+  const handleSeedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = parseInt(e.target.value, 10);
     if (!isNaN(val)) {
       setSeed(val);
@@ -145,7 +146,7 @@ export default function App() {
     incrementConfigTotal();
   };
 
-  function b64toBlob(b64Data, contentType = "image/png", sliceSize = 512) {
+  function b64toBlob(b64Data: string, contentType = "image/png", sliceSize = 512): Blob {
     const byteCharacters = atob(b64Data);
     const byteArrays = [];
     for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
@@ -177,12 +178,15 @@ export default function App() {
     }
   };
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (event) => {
-        setCustomImageSrc(event.target.result);
+        const result = event.target?.result;
+        if (typeof result === 'string') {
+          setCustomImageSrc(result);
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -193,11 +197,13 @@ export default function App() {
       <div className="language-bar">
         <span className="text-sm text-gray-600"> {t("language")}: </span>
         <div className="join">
-          {[
-            { label: "中", value: "zh" },
-            { label: "日", value: "ja" },
-            { label: "En", value: "en" },
-          ].map(({ label, value }) => (
+          {(
+            [
+              { label: "中", value: "zh" as Language },
+              { label: "日", value: "ja" as Language },
+              { label: "En", value: "en" as Language },
+            ] as const
+          ).map(({ label, value }) => (
             <input
               key={value}
               className="lang-option"
@@ -348,11 +354,13 @@ export default function App() {
               </div>
             </div>
             <div className="flex flex-row justify-center gap-8">
-              {[
-                { label: "fill_color", option: "fillColor" },
-                { label: "inner_stroke_color", option: "strokeColor" },
-                { label: "outer_stroke_color", option: "outstrokeColor" },
-              ].map(({ label, option }) => (
+              {(
+                [
+                  { label: "fill_color" as const, option: "fillColor" as const },
+                  { label: "inner_stroke_color" as const, option: "strokeColor" as const },
+                  { label: "outer_stroke_color" as const, option: "outstrokeColor" as const },
+                ] as const
+              ).map(({ label, option }) => (
                 <div key={option} className="flex flex-col items-center gap-2">
                   <label className="text-sm font-bold">{t(label)}:</label>
                   <ColorPicker
