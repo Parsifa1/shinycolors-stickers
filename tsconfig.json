@@ -19,7 +19,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    
+
     /* Additional checks */
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,

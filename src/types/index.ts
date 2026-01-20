@@ -90,7 +90,7 @@ export interface UIStore extends UIState {
   t: (key: LocaleKey) => string;
 }
 
-export type LocaleKey = 
+export type LocaleKey =
   | "total_stickers_made"
   | "copy"
   | "download"

@@ -1,8 +1,8 @@
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import characters from "../characters.json";
 import useCanvasStore from "../stores/useCanvasStore";
-import type { CanvasStore } from "../types";
 import useUIStore from "../stores/useUIStore";
+import type { CanvasStore } from "../types";
 
 export default function Picker() {
   const setCharacter = useCanvasStore(
@@ -16,8 +16,8 @@ export default function Picker() {
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
+        dropdownRef.current
+        && !dropdownRef.current.contains(event.target as Node)
       ) {
         setIsOpen(false);
       }
@@ -33,9 +33,9 @@ export default function Picker() {
     return characters
       .map((c, index) => {
         if (
-          s === c.id ||
-          c.name.toLowerCase().includes(s) ||
-          c.character.toLowerCase().includes(s)
+          s === c.id
+          || c.name.toLowerCase().includes(s)
+          || c.character.toLowerCase().includes(s)
         ) {
           return (
             <div
@@ -44,7 +44,8 @@ export default function Picker() {
                 setIsOpen(false);
                 setCharacter(index);
               }}
-              className="cursor-pointer hover:opacity-50 active:opacity-80 transition-opacity rounded-lg overflow-hidden border border-base-200">
+              className="cursor-pointer hover:opacity-50 active:opacity-80 transition-opacity rounded-lg overflow-hidden border border-base-200"
+            >
               <img
                 src={`img/${c.img}`}
                 alt={c.name}
@@ -61,9 +62,7 @@ export default function Picker() {
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <button className="btn btn-secondary" onClick={() => setIsOpen(!isOpen)}>
-      {t("select_character")}
-      </button>
+      <button className="btn btn-secondary" onClick={() => setIsOpen(!isOpen)}>{t("select_character")}</button>
 
       {isOpen && (
         <div className="absolute -top-135 left-1/2 -translate-x-1/2 mt-2 z-50 bg-base-100 rounded-box shadow-xl border border-base-200 w-[90vw] max-w-125 overflow-hidden">
@@ -79,13 +78,9 @@ export default function Picker() {
           </div>
 
           <div className="p-4 h-112.5 overflow-y-auto">
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-              {memoizedImageListItems}
-            </div>
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">{memoizedImageListItems}</div>
             {memoizedImageListItems.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
-                No characters found
-              </div>
+              <div className="text-center py-8 text-gray-500">No characters found</div>
             )}
           </div>
         </div>

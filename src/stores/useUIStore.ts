@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import type { UIStore } from "../types/index";
 import locales from "../locales";
+import type { UIStore } from "../types/index";
 
 const useUIStore = create<UIStore>((set, get) => ({
   lang: "zh",

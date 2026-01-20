@@ -1,11 +1,11 @@
-import Canvas from "./Canvas";
-import { useRef, useCallback, useDeferredValue } from "react";
+import { useCallback, useDeferredValue, useRef } from "react";
 import { useShallow } from "zustand/shallow";
-import { CONSTANTS } from "../utils/constants";
-import useSettingsStore from "../stores/useSettingsStore";
 import useCanvasStore from "../stores/useCanvasStore";
+import useSettingsStore from "../stores/useSettingsStore";
 import useUIStore from "../stores/useUIStore";
 import type { DisplayProps } from "../types/index";
+import { CONSTANTS } from "../utils/constants";
+import Canvas from "./Canvas";
 
 export default function Display({ loadedImage, fontsLoaded }: DisplayProps) {
   const t = useUIStore((state) => state.t);
@@ -46,7 +46,7 @@ export default function Display({ loadedImage, fontsLoaded }: DisplayProps) {
 
   const handlePointerDown = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
     isDragging.current = true;
-    const touch = 'touches' in e ? e.touches[0] : null;
+    const touch = "touches" in e ? e.touches[0] : null;
     const clientX = touch ? touch.clientX : (e as React.MouseEvent).clientX;
     const clientY = touch ? touch.clientY : (e as React.MouseEvent).clientY;
     lastPos.current = { x: clientX, y: clientY };
@@ -56,7 +56,7 @@ export default function Display({ loadedImage, fontsLoaded }: DisplayProps) {
     if (!isDragging.current) return;
     if (e.cancelable && e.type === "touchmove") e.preventDefault();
 
-    const touch = 'touches' in e ? e.touches[0] : null;
+    const touch = "touches" in e ? e.touches[0] : null;
     const clientX = touch ? touch.clientX : (e as React.MouseEvent).clientX;
     const clientY = touch ? touch.clientY : (e as React.MouseEvent).clientY;
 
@@ -185,8 +185,7 @@ export default function Display({ loadedImage, fontsLoaded }: DisplayProps) {
                 for (let j = 0; j < line.length; j++) {
                   charCounter++;
                   const char = line[j];
-                  const charAngle =
-                    (Math.PI / 180) * j * ((curveFactor - 6) * 3);
+                  const charAngle = (Math.PI / 180) * j * ((curveFactor - 6) * 3);
                   ctx.rotate(charAngle);
                   drawEffectiveChar(char, 0, yOffset, pass, charCounter);
                   yOffset += s + ls;
@@ -278,7 +277,8 @@ export default function Display({ loadedImage, fontsLoaded }: DisplayProps) {
             onMouseLeave={handlePointerUp}
             onTouchStart={handlePointerDown}
             onTouchMove={handlePointerMove}
-            onTouchEnd={handlePointerUp}>
+            onTouchEnd={handlePointerUp}
+          >
             <div className="canvas">
               <Canvas draw={draw} spaceSize={settings.lineSpacing} />
             </div>
@@ -286,9 +286,7 @@ export default function Display({ loadedImage, fontsLoaded }: DisplayProps) {
             {!isReady && (
               <div className="absolute top-0 left-0 w-full h-full bg-white/80 flex flex-col items-center justify-center z-10 gap-2">
                 <span className="loading loading-spinner text-secondary"></span>
-                <span className="text-sm text-gray-600">
-                  {t("loading_assets")}
-                </span>
+                <span className="text-sm text-gray-600">{t("loading_assets")}</span>
               </div>
             )}
           </div>
@@ -308,20 +306,16 @@ export default function Display({ loadedImage, fontsLoaded }: DisplayProps) {
               type="range"
               min={-50}
               max={256}
-              value={
-                settings.curve && !settings.vertical ?
-                  256 - settings.y + settings.s * 3
-                : 256 - settings.y
-              }
+              value={settings.curve && !settings.vertical
+                ? 256 - settings.y + settings.s * 3
+                : 256 - settings.y}
               onChange={(e) =>
                 updateSetting(
                   "y",
-
-                  settings.curve && !settings.vertical ?
-                    256 + settings.s * 3 - Number(e.target.value)
-                  : 256 - Number(e.target.value),
-                )
-              }
+                  settings.curve && !settings.vertical
+                    ? 256 + settings.s * 3 - Number(e.target.value)
+                    : 256 - Number(e.target.value),
+                )}
               className="range range-sm w-60 -rotate-90"
             />
           </div>

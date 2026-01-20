@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { SettingsStore, SettingsState } from "../types/index";
+import type { SettingsState, SettingsStore } from "../types/index";
 import { CONSTANTS } from "../utils/constants";
 
 const defaultSettings: SettingsState = {

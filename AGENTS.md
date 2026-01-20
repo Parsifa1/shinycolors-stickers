@@ -58,36 +58,40 @@ src/
 ## 代码风格指南
 
 ### 命名约定
+
 - **组件**: PascalCase (`Display.tsx`)
 - **Stores**: camelCase，带 `use` 前缀 (`useSettingsStore.ts`)
 - **工具/数据**: camelCase/lowercase (`config.ts`, `characters.json`)
 - **类型文件**: PascalCase (`types/index.ts`)
 
 ### 导入顺序
+
 ```tsx
 // 1. React hooks  2. Zustand  3. 外部库  4. Stores  5. 组件  6. 数据  7. 工具  8. 类型  9. 样式
 import { useEffect } from "react";
 import { useShallow } from "zustand/shallow";
-import useSettingsStore from "./stores/useSettingsStore";
-import Display from "./components/Display";
 import characters from "./characters.json";
-import { CONSTANTS } from "./utils/constants";
+import Display from "./components/Display";
+import useSettingsStore from "./stores/useSettingsStore";
 import type { SettingsStore } from "./types";
+import { CONSTANTS } from "./utils/constants";
 import "./style/App.css";
 ```
 
 ### 格式化
-- **缩进**: 2 空格  |  **引号**: 双引号  |  **分号**: 必需  |  **尾随逗号**: 是
+
+- **缩进**: 2 空格 | **引号**: 双引号 | **分号**: 必需 | **尾随逗号**: 是
 
 ### 状态管理（Zustand）
 
-| Store | 用途 | 关键状态 |
-|-------|------|---------|
-| `useSettingsStore` | 贴纸配置 | text, x, y, colors, font, effects |
-| `useCanvasStore` | Canvas 状态 | character, loadedImage, seed |
-| `useUIStore` | UI 状态 | lang, fontsLoaded, snackbar, t() |
+| Store              | 用途        | 关键状态                          |
+| ------------------ | ----------- | --------------------------------- |
+| `useSettingsStore` | 贴纸配置    | text, x, y, colors, font, effects |
+| `useCanvasStore`   | Canvas 状态 | character, loadedImage, seed      |
+| `useUIStore`       | UI 状态     | lang, fontsLoaded, snackbar, t()  |
 
 **用法示例**:
+
 ```tsx
 // 使用 useShallow 防止不必要的重新渲染
 const settings = useSettingsStore(useShallow((state: SettingsStore) => ({
@@ -99,20 +103,24 @@ const t = useUIStore((state) => state.t);
 ```
 
 ### 组件模式
+
 ```tsx
 export default function ComponentName({ prop1, prop2 }: ComponentProps) {
   const t = useUIStore((state: UIStore) => state.t);
   const value = useSomeStore((state: SomeStore) => state.value);
   const { updateValue } = useSomeStore();
 
-  useEffect(() => { /* ... */ }, [dependencies]);
-  const handleSomething = (e: React.ChangeEvent<HTMLInputElement>) => { /* ... */ };
+  useEffect(() => {/* ... */}, [dependencies]);
+  const handleSomething = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {/* ... */};
 
   return <div className="tailwind-classes">{/* content */}</div>;
 }
 ```
 
 ### 样式
+
 - **Tailwind CSS** 工具类 + **DaisyUI** 组件 (`btn`, `input`, `toggle` 等)
 - **主题**: `caramellatte`（在 App.css 中定义）
 - **自定义类**: 在 `src/style/App.css` 中使用 `@apply`
@@ -122,38 +130,41 @@ export default function ComponentName({ prop1, prop2 }: ComponentProps) {
 ## React 最佳实践（关键！）
 
 ### useEffect 与异步操作
+
 ```tsx
 // ✅ 正确：处理 cleanup 和 AbortController
 useEffect(() => {
   const controller = new AbortController();
-  
+
   const fetchData = async () => {
     try {
       const data = await someAsyncOperation(controller.signal);
       setState(data);
     } catch (err) {
-      if (err instanceof Error && err.name !== 'AbortError') {  // 静默处理 AbortError
-        console.error('Error:', err);
+      if (err instanceof Error && err.name !== "AbortError") { // 静默处理 AbortError
+        console.error("Error:", err);
       }
     }
   };
-  
+
   fetchData();
-  return () => controller.abort();  // cleanup
+  return () => controller.abort(); // cleanup
 }, [dependencies]);
 
 // ❌ 错误：使用 isMounted 标志（反模式）
 let isMounted = true;
-if (isMounted) setState(data);  // 不要这样做！
+if (isMounted) setState(data); // 不要这样做！
 ```
 
 ### Strict Mode 处理
+
 - **开发模式**：Effect 会执行两次（mount → unmount → mount）
 - **不要**试图绕过或"修复"双重执行
 - **要**确保 cleanup 函数正确取消异步操作
 - **AbortError 是正常的**，应该被静默处理
 
 ### 字体加载模式
+
 ```tsx
 // ✅ 幂等的字体加载（见 src/utils/preload.ts）
 - 重新抛出 AbortError 让上层处理
@@ -174,7 +185,7 @@ if (isMounted) setState(data);  // 不要这样做！
 // Canvas.tsx - 正确处理异步 draw
 useEffect(() => {
   const render = async () => {
-    await draw(context);  // 等待字体加载完成
+    await draw(context); // 等待字体加载完成
   };
   render();
 }, [draw]);
@@ -185,6 +196,7 @@ useEffect(() => {
 ## 错误处理
 
 ### 分层错误处理模式
+
 ```tsx
 // 1. 底层函数 - 重新抛出 AbortError
 catch (error) {
@@ -218,6 +230,7 @@ catch (err) {
 const t = useUIStore((state) => state.t);
 // 用法: {t("copy")}
 ```
+
 支持语言: `zh`（默认）、`en`、`ja`，定义在 `src/locales.ts`
 
 ---
@@ -235,6 +248,7 @@ MITER_LIMIT: 2.5, CURVE_OFFSET_FACTOR: 3.5
 ## 代理注意事项
 
 ### 技术约束
+
 1. **TypeScript 5** - 使用严格模式，完整类型覆盖
 2. **无测试套件** - 没有 `pnpm test` 命令
 3. **Zustand 管理状态** - 不要对共享状态使用 useState，使用 stores
@@ -245,6 +259,7 @@ MITER_LIMIT: 2.5, CURVE_OFFSET_FACTOR: 3.5
 8. **Tailwind CSS v4** - 使用 `@import "tailwindcss"` 语法，非 v3 配置
 
 ### 进行更改时
+
 - 运行 `pnpm dev` 进行可视化测试
 - 运行 `pnpm tsc --noEmit` 检查类型错误
 - 提交前运行 `pnpm build` 验证无构建错误
@@ -255,6 +270,7 @@ MITER_LIMIT: 2.5, CURVE_OFFSET_FACTOR: 3.5
 - 确保所有组件和函数都有正确的 TypeScript 类型注解
 
 ### 常见陷阱（避免！）
+
 ❌ 使用 `isMounted` 标志检查
 ❌ 在 useEffect 中不处理 cleanup
 ❌ 忽略 Strict Mode 的双重执行
@@ -263,6 +279,7 @@ MITER_LIMIT: 2.5, CURVE_OFFSET_FACTOR: 3.5
 ❌ 在 Canvas 绘制函数中不使用 async/await
 
 ### 最佳实践（遵循！）
+
 ✅ 使用 AbortController 取消异步操作
 ✅ 在 cleanup 函数中取消 Effect
 ✅ 静默处理 AbortError（这是正常的 cleanup 行为）

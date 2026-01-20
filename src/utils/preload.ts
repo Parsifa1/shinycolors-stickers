@@ -1,4 +1,8 @@
-export async function preloadFont(fontFamily: string, url: string | URL, signal: AbortSignal | undefined = undefined): Promise<void> {
+export async function preloadFont(
+  fontFamily: string,
+  url: string | URL,
+  signal: AbortSignal | undefined = undefined,
+): Promise<void> {
   try {
     const response = await fetch(url, {
       headers: {
@@ -11,7 +15,7 @@ export async function preloadFont(fontFamily: string, url: string | URL, signal:
     document.fonts.add(font);
     console.info(`Font ${fontFamily} preload done.`);
   } catch (error) {
-    if (error instanceof Error && error.name === 'AbortError') {
+    if (error instanceof Error && error.name === "AbortError") {
       throw error;
     }
     console.error(error);

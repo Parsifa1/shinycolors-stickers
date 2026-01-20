@@ -1,21 +1,21 @@
 import { useEffect } from "react";
 import { useShallow } from "zustand/shallow";
-import YurukaStd from "./fonts/YurukaStd.woff2";
 import SSFangTangTi from "./fonts/ShangShouFangTangTi.woff2";
+import YurukaStd from "./fonts/YurukaStd.woff2";
 import YouWangFangYuanTi from "./fonts/攸望方圆体-中.woff2";
 import "./style/App.css";
-import Display from "./components/Display";
-import characters from "./characters.json";
-import Picker from "./components/Picker";
 import ColorPicker from "@uiw/react-color-chrome";
+import characters from "./characters.json";
+import Display from "./components/Display";
+import Picker from "./components/Picker";
+import Ranges from "./components/Range";
+import useCanvasStore from "./stores/useCanvasStore";
+import useSettingsStore from "./stores/useSettingsStore";
+import useUIStore from "./stores/useUIStore";
+import type { Language, SettingsStore } from "./types";
 import getConfiguration from "./utils/config";
 import log from "./utils/log";
 import { preloadFont } from "./utils/preload";
-import Ranges from "./components/Range";
-import useSettingsStore from "./stores/useSettingsStore";
-import useCanvasStore from "./stores/useCanvasStore";
-import useUIStore from "./stores/useUIStore";
-import type { Language, SettingsStore } from "./types";
 
 const { ClipboardItem } = window;
 
@@ -26,7 +26,17 @@ const fontList = [
 ];
 
 export default function App() {
-  const { lang, setLang, fontsLoaded, setFontsLoaded, showCopySnackbar, setShowCopySnackbar, setConfig, incrementConfigTotal, t } = useUIStore();
+  const {
+    lang,
+    setLang,
+    fontsLoaded,
+    setFontsLoaded,
+    showCopySnackbar,
+    setShowCopySnackbar,
+    setConfig,
+    incrementConfigTotal,
+    t,
+  } = useUIStore();
 
   const {
     character,
@@ -73,16 +83,16 @@ export default function App() {
 
       const criticalPromises = criticalFonts.map((f) =>
         preloadFont(f.name, f.path, controller.signal).catch((err) => {
-          if (err.name === 'AbortError') {
+          if (err.name === "AbortError") {
             throw err;
           }
           console.error(`Failed to load critical font ${f.name}`, err);
-        }),
+        })
       );
 
       optionalFonts.forEach((f) => {
         preloadFont(f.name, f.path, controller.signal).catch((err) => {
-          if (err.name !== 'AbortError') {
+          if (err.name !== "AbortError") {
             console.error(`Failed to load optional font ${f.name}`, err);
           }
         });
@@ -93,8 +103,8 @@ export default function App() {
         console.log("Critical fonts loaded! UI Unlocked.");
         setFontsLoaded(true);
       } catch (err) {
-        if (err instanceof Error && err.name !== 'AbortError') {
-          console.error('Font loading error:', err);
+        if (err instanceof Error && err.name !== "AbortError") {
+          console.error("Font loading error:", err);
         }
       }
     };
@@ -185,7 +195,7 @@ export default function App() {
       const reader = new FileReader();
       reader.onload = (event) => {
         const result = event.target?.result;
-        if (typeof result === 'string') {
+        if (typeof result === "string") {
           setCustomImageSrc(result);
         }
       };
@@ -196,7 +206,7 @@ export default function App() {
   return (
     <div className="App">
       <div className="language-bar">
-        <span className="text-sm text-gray-600"> {t("language")}: </span>
+        <span className="text-sm text-gray-600">{t("language")}:</span>
         <div className="join">
           {(
             [
@@ -230,7 +240,9 @@ export default function App() {
                 placeholder={t("text")}
                 value={settings.text}
                 onChange={(e) => updateSetting("text", e.target.value)}
-                rows={2}></textarea>
+                rows={2}
+              >
+              </textarea>
             </div>
             <div className="form-control w-full sm:w-auto min-w-40">
               <label className="label">
@@ -239,7 +251,8 @@ export default function App() {
               <select
                 className="select select-secondary w-full"
                 value={settings.font}
-                onChange={(e) => updateSetting("font", e.target.value)}>
+                onChange={(e) => updateSetting("font", e.target.value)}
+              >
                 {fontList.map((f) => (
                   <option key={f.name} value={f.name}>
                     {f.name}
@@ -274,9 +287,7 @@ export default function App() {
                       max={10}
                       step={0.1}
                       value={settings.curveFactor}
-                      onChange={(e) =>
-                        updateSetting("curveFactor", Number(e.target.value))
-                      }
+                      onChange={(e) => updateSetting("curveFactor", Number(e.target.value))}
                       className="setting-range"
                     />
                   </div>
@@ -295,10 +306,7 @@ export default function App() {
                           value={seed}
                           onChange={handleSeedChange}
                         />
-                        <button
-                          className="btn btn-ghost btn-xs px-1"
-                          onClick={generateNewSeed}
-                          title={t("new_seed")}>
+                        <button className="btn btn-ghost btn-xs px-1" onClick={generateNewSeed} title={t("new_seed")}>
                           🎲
                         </button>
                       </div>
@@ -307,9 +315,7 @@ export default function App() {
                       type="checkbox"
                       className="toggle toggle-secondary toggle-sm"
                       checked={settings.wobbly}
-                      onChange={(e) =>
-                        updateSetting("wobbly", e.target.checked)
-                      }
+                      onChange={(e) => updateSetting("wobbly", e.target.checked)}
                     />
                   </div>
                 </div>
@@ -325,9 +331,7 @@ export default function App() {
                         max={1}
                         step={0.01}
                         value={settings.wobblyScale}
-                        onChange={(e) =>
-                          updateSetting("wobblyScale", Number(e.target.value))
-                        }
+                        onChange={(e) => updateSetting("wobblyScale", Number(e.target.value))}
                         className="setting-range"
                       />
                     </div>
@@ -345,8 +349,7 @@ export default function App() {
                           updateSetting(
                             "wobblyRotation",
                             Number(e.target.value),
-                          )
-                        }
+                          )}
                         className="setting-range"
                       />
                     </div>
@@ -381,34 +384,20 @@ export default function App() {
               <Picker />
             </div>
             <div className="flex flex-wrap justify-center gap-2 items-center w-full mt-4">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                id="image-upload"
-                className="hidden"
-              />
+              <input type="file" accept="image/*" onChange={handleImageUpload} id="image-upload" className="hidden" />
               <label htmlFor="image-upload">
-                <span className="btn btn-outline btn-secondary btn-sm">
-                  {t("upload_your_image")}
-                </span>
+                <span className="btn btn-outline btn-secondary btn-sm">{t("upload_your_image")}</span>
               </label>
               {customImageSrc && (
-                <button
-                  className="btn btn-warning btn-sm ml-2"
-                  onClick={clearCustomImage}>
+                <button className="btn btn-warning btn-sm ml-2" onClick={clearCustomImage}>
                   {t("reset_to_original")}
                 </button>
               )}
             </div>
           </div>
           <div className="flex flex-wrap justify-center gap-4 mt-4">
-            <button className="btn btn-secondary" onClick={copy}>
-              {t("copy")}
-            </button>
-            <button className="btn btn-secondary" onClick={download}>
-              {t("download")}
-            </button>
+            <button className="btn btn-secondary" onClick={copy}>{t("copy")}</button>
+            <button className="btn btn-secondary" onClick={download}>{t("download")}</button>
           </div>
         </div>
       </div>

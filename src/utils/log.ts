@@ -20,7 +20,7 @@ async function log(id: string, name: string, type: string): Promise<LogResponse 
         headers: {
           "x-key": key,
         },
-      }
+      },
     );
     if (response.data.key) {
       localStorage.setItem("x-key", response.data.key);

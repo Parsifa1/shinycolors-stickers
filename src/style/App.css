@@ -22,11 +22,13 @@
 
 /* 语言切换栏 */
 .language-bar {
- @apply absolute top-4 right-4 flex items-center gap-2 bg-base-100 p-2 rounded-lg shadow-sm z-10 opacity-90 hover:opacity-100 transition-opacity;
+  @apply absolute top-4 right-4 flex items-center gap-2 bg-base-100 p-2
+    rounded-lg shadow-sm z-10 opacity-90 hover:opacity-100 transition-opacity;
 }
 
 .canvas-wrapper {
-  @apply relative shadow-xl rounded-box overflow-hidden bg-base-100 border border-base-300;
+  @apply relative shadow-xl rounded-box overflow-hidden bg-base-100 border
+    border-base-300;
 }
 
 .canvas {

@@ -1,11 +1,6 @@
 import useSettingsStore from "../stores/useSettingsStore";
 import useUIStore from "../stores/useUIStore";
-import type {
-  LocaleKey,
-  SettingsState,
-  SettingsStore,
-  UIStore,
-} from "../types/index";
+import type { LocaleKey, SettingsState, SettingsStore, UIStore } from "../types/index";
 
 interface RangeItemProps {
   min: number;
@@ -26,9 +21,7 @@ function Range({ min, max, option, name }: RangeItemProps) {
   return (
     <div className="flex-1 w-full">
       <label className="label">
-        <span className="label-text font-bold">
-          {t(name)}: {value}
-        </span>
+        <span className="label-text font-bold">{t(name)}: {value}</span>
       </label>
       <input
         type="range"
@@ -61,9 +54,7 @@ export default function Ranges() {
     if (index % 2 !== 0) return null;
     const { option: opt, name: na, min: mi, max: ma } = rangelist[index + 1];
     return (
-      <div
-        key={option}
-        className="flex flex-col sm:flex-row items-center gap-4 w-full">
+      <div key={option} className="flex flex-col sm:flex-row items-center gap-4 w-full">
         <Range min={min} max={max} option={option} name={name} />
         <Range min={mi} max={ma} option={opt} name={na} />
       </div>

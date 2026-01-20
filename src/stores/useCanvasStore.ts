@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import type { CanvasStore } from "../types/index";
 import characters from "../characters.json";
+import type { CanvasStore } from "../types/index";
 
 const useCanvasStore = create<CanvasStore>((set, get) => ({
   character: 18,

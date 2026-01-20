@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useEffect, useRef } from "react";
 import type { CanvasProps } from "../types/index";
 
 const Canvas = (props: CanvasProps) => {
